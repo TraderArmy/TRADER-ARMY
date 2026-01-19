@@ -1,199 +1,99 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trading Terminal</title>
 
 <style>
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
+  background: #000;
   height: 100%;
-  background: #000;
   overflow: hidden;
-  font-family: Arial, sans-serif;
 }
 
-/* TOP BAR */
-#topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #111;
-  z-index: 1000;
-  padding: 6px;
-  box-sizing: border-box;
-}
-
-/* LAYOUT BUTTONS */
-#layouts {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-button {
-  flex: 1;
-  padding: 8px;
-  background: #000;
-  color: #0f0;
-  border: 1px solid #333;
-  font-size: 14px;
-}
-
-/* SELECTS */
-.selects {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-select {
-  width: 100%;
-  padding: 8px;
-  background: #000;
-  color: #0f0;
-  border: 1px solid #333;
-  font-size: 14px;
-}
-
-/* GRID */
 .grid {
   display: grid;
-  width: 100vw;
-  height: calc(100vh - 130px);
-  margin-top: 130px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  height: 100vh;
 }
 
 .chart {
+  border: 1px solid #222;
+  cursor: pointer;
+}
+
+/* MODAL */
+#modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+}
+
+#modal iframe {
   width: 100%;
   height: 100%;
+  border: none;
 }
 
-/* 📱 MOBILE */
-@media (max-width: 768px) {
-  .selects {
-    grid-template-columns: 1fr 1fr;
-  }
-  .grid {
-    height: calc(100vh - 160px);
-    margin-top: 160px;
-  }
-}
-
-/* 📱 SMALL PHONE */
-@media (max-width: 480px) {
-  .selects {
-    grid-template-columns: 1fr;
-  }
-  .grid {
-    height: calc(100vh - 220px);
-    margin-top: 220px;
-  }
+#close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: red;
+  color: white;
+  padding: 10px;
+  z-index: 10000;
 }
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
-  <div id="layouts">
-    <button onclick="setLayout(1)">1</button>
-    <button onclick="setLayout(2)">2</button>
-    <button onclick="setLayout(3)">3</button>
-    <button onclick="setLayout(4)">4</button>
-  </div>
-
-  <div class="selects">
-    <select onchange="changeChart(1, this.value)">
-      <option value="BINANCE:BTCUSDT">BTC/USDT</option>
-      <option value="BINANCE:ETHUSDT">ETH/USDT</option>
-      <option value="OANDA:EURUSD">EUR/USD</option>
-      <option value="OANDA:US100USD">US100</option>
-    </select>
-
-    <select onchange="changeChart(2, this.value)">
-      <option value="BINANCE:ETHUSDT">ETH/USDT</option>
-      <option value="BINANCE:SOLUSDT">SOL/USDT</option>
-      <option value="OANDA:GBPUSD">GBP/USD</option>
-      <option value="OANDA:US500USD">US500</option>
-    </select>
-
-    <select onchange="changeChart(3, this.value)">
-      <option value="BINANCE:SOLUSDT">SOL/USDT</option>
-      <option value="BINANCE:XRPUSDT">XRP/USDT</option>
-      <option value="OANDA:XAUUSD">XAU/USD</option>
-      <option value="OANDA:DE40EUR">GER40</option>
-    </select>
-
-    <select onchange="changeChart(4, this.value)">
-      <option value="BINANCE:BNBUSDT">BNB/USDT</option>
-      <option value="BINANCE:ADAUSDT">ADA/USDT</option>
-      <option value="OANDA:USDJPY">USD/JPY</option>
-      <option value="OANDA:US30USD">US30</option>
-    </select>
-  </div>
+<div class="grid">
+  <div class="chart" onclick="openChart('BINANCE:BTCUSDT')" id="tv1"></div>
+  <div class="chart" onclick="openChart('BINANCE:ETHUSDT')" id="tv2"></div>
+  <div class="chart" onclick="openChart('OANDA:EURUSD')" id="tv3"></div>
+  <div class="chart" onclick="openChart('OANDA:US100USD')" id="tv4"></div>
 </div>
 
-<div class="grid" id="grid">
-  <div class="chart" id="tv1"></div>
-  <div class="chart" id="tv2"></div>
-  <div class="chart" id="tv3"></div>
-  <div class="chart" id="tv4"></div>
+<div id="modal">
+  <div id="close" onclick="closeChart()">KAPAT</div>
+  <iframe id="iframe"></iframe>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-const charts = {
-  1: { id: "tv1", symbol: "BINANCE:BTCUSDT" },
-  2: { id: "tv2", symbol: "BINANCE:ETHUSDT" },
-  3: { id: "tv3", symbol: "BINANCE:SOLUSDT" },
-  4: { id: "tv4", symbol: "BINANCE:BNBUSDT" }
-};
-
-function setLayout(n) {
-  const grid = document.getElementById("grid");
-
-  if (n === 1) {
-    grid.style.gridTemplateColumns = "1fr";
-    grid.style.gridTemplateRows = "1fr";
-  } else if (n === 2) {
-    grid.style.gridTemplateColumns = "1fr 1fr";
-    grid.style.gridTemplateRows = "1fr";
-  } else {
-    grid.style.gridTemplateColumns = "1fr 1fr";
-    grid.style.gridTemplateRows = "1fr 1fr";
-  }
-
-  [1,2,3,4].forEach(i => {
-    document.getElementById(charts[i].id).style.display =
-      i <= n ? "block" : "none";
-  });
-}
-
-function loadChart(n) {
-  const el = document.getElementById(charts[n].id);
-  el.innerHTML = "";
+function load(id, symbol) {
   new TradingView.widget({
     autosize: true,
-    symbol: charts[n].symbol,
+    symbol: symbol,
     interval: "15",
     theme: "dark",
-    style: "1",
-    container_id: charts[n].id
+    container_id: id
   });
 }
 
-function changeChart(n, symbol) {
-  charts[n].symbol = symbol;
-  loadChart(n);
+load("tv1","BINANCE:BTCUSDT");
+load("tv2","BINANCE:ETHUSDT");
+load("tv3","OANDA:EURUSD");
+load("tv4","OANDA:US100USD");
+
+function openChart(symbol) {
+  document.getElementById("iframe").src =
+    "https://www.tradingview.com/chart/?symbol=" + symbol;
+  document.getElementById("modal").style.display = "block";
 }
 
-[1,2,3,4].forEach(loadChart);
-setLayout(4);
+function closeChart() {
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("iframe").src = "";
+}
 </script>
 
 </body>
