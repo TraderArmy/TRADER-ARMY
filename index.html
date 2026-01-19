@@ -1,69 +1,185 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Trading Chart</title>
+    <title>Pro Trade Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0c0d10; margin: 0; padding: 0; overflow: hidden; }
-        .chart-container { height: calc(100vh - 40px); width: 100%; }
+        /* Genel Sayfa Ayarları */
+        body { background-color: #0c0d10; color: #d1d4dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; overflow: hidden; }
+        
+        /* Kaydırma Çubuğu Tasarımı */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #131722; }
+        ::-webkit-scrollbar-thumb { background: #2a2e39; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Sol Menü Etkileşimleri */
+        .sidebar-item { transition: all 0.2s; border-left: 2px solid transparent; }
+        .sidebar-item:hover { background-color: #2a2e39; border-left-color: #2962ff; color: white; }
+
+        /* Çoklu Ekran Grid Sistemi */
+        #chart-grid { display: grid; height: 100%; width: 100%; gap: 1px; background-color: #000; }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        /* Layout Butonları */
+        .layout-btn { background: #1e222d; border: 1px solid #2a2e39; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #81858e; transition: 0.3s; }
+        .layout-btn:hover, .layout-btn.active { background: #2962ff; color: white; border-color: #2962ff; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <div class="h-10 border-b border-[#1e222d] bg-[#131722]">
+    <div class="h-10 border-b border-[#1e222d] bg-[#131722] shrink-0">
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
           "symbols": [
-            {"proName": "BINANCE:BTCUSDT", "title": "BTC/USDT"},
-            {"proName": "BINANCE:ETHUSDT", "title": "ETH/USDT"},
-            {"proName": "BINANCE:SOLUSDT", "title": "SOL/USDT"},
-            {"proName": "BINANCE:BNBUSDT", "title": "BNB/USDT"},
+            {"proName": "BINANCE:BTCUSDT", "title": "Bitcoin"},
+            {"proName": "BINANCE:ETHUSDT", "title": "Ethereum"},
+            {"proName": "BINANCE:SOLUSDT", "title": "Solana"},
+            {"proName": "FX:USDTRY", "title": "USD/TRY"},
+            {"proName": "TVC:GOLD", "title": "Ons Altın"},
             {"proName": "NASDAQ:TSLA", "title": "Tesla"},
             {"proName": "NASDAQ:AAPL", "title": "Apple"}
           ],
-          "showSymbolLogo": true,
-          "colorTheme": "dark",
-          "isTransparent": true,
-          "displayMode": "adaptive",
-          "locale": "tr"
+          "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "tr"
         }
         </script>
     </div>
 
-    <main class="chart-container">
-        <div id="tradingview_pro" style="height: 100%; width: 100%;"></div>
-    </main>
+    <div class="h-12 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0">
+        <div class="flex items-center space-x-2">
+            <span class="text-blue-500 font-bold text-lg tracking-tight">TERMINAL<span class="text-white">PRO</span></span>
+            <span class="text-xs text-gray-600 pl-2 border-l border-gray-700 ml-2" id="current-asset-name">BTCUSDT</span>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <span class="text-[10px] text-gray-500 uppercase font-bold mr-2">Ekran Bölme:</span>
+            <button onclick="changeLayout(1, this)" class="layout-btn active">1</button>
+            <button onclick="changeLayout(2, this)" class="layout-btn">2</button>
+            <button onclick="changeLayout(3, this)" class="layout-btn">3</button>
+            <button onclick="changeLayout(4, this)" class="layout-btn">4</button>
+        </div>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-56 border-r border-[#1e222d] bg-[#131722] flex flex-col overflow-y-auto shrink-0">
+            <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider sticky top-0 bg-[#131722]">Kripto</div>
+            <div onclick="updateSymbol('BINANCE:BTCUSDT')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Bitcoin <span class="text-gray-600 text-xs float-right">BTC</span></div>
+            <div onclick="updateSymbol('BINANCE:ETHUSDT')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Ethereum <span class="text-gray-600 text-xs float-right">ETH</span></div>
+            <div onclick="updateSymbol('BINANCE:SOLUSDT')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Solana <span class="text-gray-600 text-xs float-right">SOL</span></div>
+            <div onclick="updateSymbol('BINANCE:XRPUSDT')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Ripple <span class="text-gray-600 text-xs float-right">XRP</span></div>
+
+            <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-2 sticky top-0 bg-[#131722]">Döviz & Emtia</div>
+            <div onclick="updateSymbol('FX:USDTRY')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Dolar/TL <span class="text-gray-600 text-xs float-right">TRY</span></div>
+            <div onclick="updateSymbol('TVC:GOLD')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Altın <span class="text-gray-600 text-xs float-right">XAU</span></div>
+            <div onclick="updateSymbol('TVC:SILVER')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Gümüş <span class="text-gray-600 text-xs float-right">XAG</span></div>
+
+            <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-2 sticky top-0 bg-[#131722]">Global</div>
+            <div onclick="updateSymbol('NASDAQ:TSLA')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Tesla <span class="text-gray-600 text-xs float-right">TSLA</span></div>
+            <div onclick="updateSymbol('NASDAQ:AAPL')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Apple <span class="text-gray-600 text-xs float-right">AAPL</span></div>
+            <div onclick="updateSymbol('NASDAQ:NVDA')" class="sidebar-item p-3 text-sm cursor-pointer text-gray-300">Nvidia <span class="text-gray-600 text-xs float-right">NVDA</span></div>
+        </aside>
+
+        <main class="flex-1 bg-[#000] relative">
+            <div id="chart-grid" class="grid-1">
+                <div id="tv_chart_1" class="w-full h-full bg-[#131722]"></div>
+                <div id="tv_chart_2" class="w-full h-full bg-[#131722] hidden"></div>
+                <div id="tv_chart_3" class="w-full h-full bg-[#131722] hidden"></div>
+                <div id="tv_chart_4" class="w-full h-full bg-[#131722] hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="h-8 border-t border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 text-[10px] text-gray-500 shrink-0">
+        <div>&copy; 2026 Pro Terminal v1.0</div>
+        <div class="flex items-center space-x-2">
+            <span class="text-yellow-600">⚠️</span>
+            <span>Bu platformdaki veriler ve grafikler eğitim amaçlıdır. <span class="text-gray-300">Yatırım tavsiyesi değildir.</span></span>
+        </div>
+    </footer>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-        new TradingView.widget({
-            "autosize": true,
-            "symbol": "BINANCE:BTCUSDT",
-            "interval": "D",
-            "timezone": "Etc/UTC",
-            "theme": "dark",
-            "style": "1",
-            "locale": "tr",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "hide_side_toolbar": false, // Çizim araçları açık (Premium hissi)
-            "allow_symbol_change": true,
-            "container_id": "tradingview_pro",
-            "withdateranges": true,
-            "details": true,
-            "hotlist": true,
-            "calendar": true,
+    <script>
+        // Başlangıç Ayarları
+        let currentSymbol = 'BINANCE:BTCUSDT';
+        let activeChartCount = 1;
+
+        // Grafik Oluşturma Fonksiyonu
+        function initChart(containerId, symbol) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "D", // Günlük Grafik
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "tr",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_side_toolbar": false, // Çizim Araçları Açık
+                "allow_symbol_change": true,
+                "container_id": containerId,
+                "studies": [], // İndikatörler BOŞ (Temiz Başlangıç)
+                "save_image": true
+            });
+        }
+
+        // Layout Değiştirme (1, 2, 3, 4)
+        function changeLayout(count, btnElement) {
+            activeChartCount = count;
             
-            // İstediğin kadar indikatör yüklü gelebilir
-            "studies": [
-                "RSI@tv-basicstudies",
-                "MACD@tv-basicstudies",
-                "Moving Average Exponential@tv-basicstudies",
-                "StochasticRSI@tv-basicstudies"
-            ]
-        });
+            // Grid Sınıfını Güncelle
+            const grid = document.getElementById('chart-grid');
+            grid.className = `grid-${count}`;
+
+            // Butonların aktiflik durumunu güncelle
+            document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            // Grafikleri Aç/Kapa
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`tv_chart_${i}`);
+                if (i <= count) {
+                    el.classList.remove('hidden');
+                    // Eğer içi boşsa grafiği oluştur
+                    if (el.innerHTML === "") {
+                        initChart(`tv_chart_${i}`, currentSymbol);
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    el.innerHTML = ""; // Performans için gizlenenleri temizle
+                }
+            }
+            
+            // Düzen değişince mevcut grafikleri yeniden boyutlandır (TradingView bugını önlemek için)
+            setTimeout(() => {
+                for (let i = 1; i <= count; i++) {
+                    initChart(`tv_chart_${i}`, currentSymbol);
+                }
+            }, 100);
+        }
+
+        // Sembol Değiştirme
+        function updateSymbol(symbol) {
+            currentSymbol = symbol;
+            document.getElementById('current-asset-name').innerText = symbol;
+            
+            // Aktif olan tüm grafiklerde sembolü güncelle
+            for (let i = 1; i <= activeChartCount; i++) {
+                initChart(`tv_chart_${i}`, currentSymbol);
+            }
+        }
+
+        // Sayfa Yüklendiğinde Başlat
+        window.onload = function() {
+            initChart('tv_chart_1', currentSymbol);
+        };
     </script>
 </body>
 </html>
