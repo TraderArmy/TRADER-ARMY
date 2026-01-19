@@ -1,135 +1,87 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trading Terminal</title>
-
-<style>
-html,body{
-  margin:0;
-  padding:0;
-  background:#000;
-  height:100%;
-  font-family:Arial,sans-serif;
-  overflow:hidden;
-}
-
-/* TOP BAR */
-#topbar{
-  position:fixed;
-  top:0;
-  width:100%;
-  background:#111;
-  z-index:1000;
-  padding:6px;
-}
-
-#layouts{
-  display:flex;
-  gap:6px;
-}
-
-button{
-  flex:1;
-  padding:8px;
-  background:#000;
-  color:#0f0;
-  border:1px solid #333;
-}
-
-/* GRID */
-#grid{
-  display:grid;
-  width:100vw;
-  height:calc(100vh - 50px);
-  margin-top:50px;
-}
-
-.chart{
-  border:1px solid #222;
-  cursor:pointer;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-  #grid{
-    grid-template-columns:1fr;
-    grid-template-rows:repeat(4,1fr);
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trading Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #131722; color: #d1d4dc; overflow: hidden; }
+        .border-gray { border-color: #2a2e39; }
+        /* Grafik yüksekliğini ayarlama */
+        #chart-container { height: calc(100vh - 50px); }
+    </style>
 </head>
+<body class="flex flex-col h-screen">
 
-<body>
+    <header class="h-12 border-b border-gray flex items-center px-4 justify-between bg-[#1e222d]">
+        <div class="flex items-center space-x-4">
+            <span class="font-bold text-white">BTCUSDT</span>
+            <span class="text-xs text-gray-400">1D • BINANCE</span>
+        </div>
+        <div class="flex space-x-3 text-sm">
+            <button class="hover:bg-gray-700 px-2 py-1 rounded">Göstergeler</button>
+            <button class="hover:bg-gray-700 px-2 py-1 rounded text-blue-400">Alarm</button>
+        </div>
+    </header>
 
-<div id="topbar">
-  <div id="layouts">
-    <button onclick="setLayout(1)">1</button>
-    <button onclick="setLayout(2)">2</button>
-    <button onclick="setLayout(3)">3</button>
-    <button onclick="setLayout(4)">4</button>
-  </div>
-</div>
+    <div class="flex flex-1">
+        <aside class="w-12 border-r border-gray flex flex-col items-center py-4 space-y-6 bg-[#1e222d]">
+            <div class="cursor-pointer hover:text-blue-500">🔍</div>
+            <div class="cursor-pointer hover:text-blue-500">📏</div>
+            <div class="cursor-pointer hover:text-blue-500">✏️</div>
+            <div class="cursor-pointer hover:text-blue-500">💬</div>
+        </aside>
 
-<div id="grid">
-  <div class="chart" id="tv1" onclick="openTV('BINANCE:BTCUSDT')"></div>
-  <div class="chart" id="tv2" onclick="openTV('BINANCE:ETHUSDT')"></div>
-  <div class="chart" id="tv3" onclick="openTV('OANDA:EURUSD')"></div>
-  <div class="chart" id="tv4" onclick="openTV('OANDA:US100USD')"></div>
-</div>
+        <main class="flex-1 bg-[#131722]" id="chart-container">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                <div id="tradingview_chart" style="height:100%;width:100%"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                <script type="text/javascript">
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": "BINANCE:BTCUSDT",
+                    "interval": "D",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "tr",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_side_toolbar": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_chart"
+                });
+                </script>
+            </div>
+        </main>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
-<script>
-const symbols=[
- "BINANCE:BTCUSDT",
- "BINANCE:ETHUSDT",
- "OANDA:EURUSD",
- "OANDA:US100USD"
-];
-
-function load(id,symbol){
- new TradingView.widget({
-  autosize:true,
-  symbol:symbol,
-  interval:"15",
-  theme:"dark",
-  container_id:id
- });
-}
-
-load("tv1",symbols[0]);
-load("tv2",symbols[1]);
-load("tv3",symbols[2]);
-load("tv4",symbols[3]);
-
-function setLayout(n){
- const g=document.getElementById("grid");
- if(n==1){
-  g.style.gridTemplateColumns="1fr";
-  g.style.gridTemplateRows="1fr";
- }else if(n==2){
-  g.style.gridTemplateColumns="1fr 1fr";
-  g.style.gridTemplateRows="1fr";
- }else{
-  g.style.gridTemplateColumns="1fr 1fr";
-  g.style.gridTemplateRows="1fr 1fr";
- }
- [1,2,3,4].forEach(i=>{
-  document.getElementById("tv"+i).style.display=i<=n?"block":"none";
- });
-}
-
-/* 🔥 ALETLİ TRADINGVIEW – KESİN */
-function openTV(symbol){
-  window.open(
-    "https://www.tradingview.com/chart/?symbol="+symbol,
-    "_blank"
-  );
-}
-
-setLayout(4);
-</script>
+        <aside class="w-72 border-l border-gray bg-[#1e222d] hidden md:block">
+            <div class="p-4 border-b border-gray flex justify-between items-center">
+                <span class="font-semibold">İzleme Listesi</span>
+                <span class="text-xl">+</span>
+            </div>
+            <div class="p-2 space-y-2">
+                <div class="flex justify-between p-2 hover:bg-gray-800 rounded cursor-pointer">
+                    <span>AAPL</span>
+                    <span class="text-red-500">255.53</span>
+                </div>
+                <div class="flex justify-between p-2 hover:bg-gray-800 rounded cursor-pointer">
+                    <span>TSLA</span>
+                    <span class="text-red-500">437.50</span>
+                </div>
+                <div class="flex justify-between p-2 hover:bg-gray-800 rounded cursor-pointer">
+                    <span>BTCUSDT</span>
+                    <span class="text-green-500">93,041.08</span>
+                </div>
+                <div class="flex justify-between p-2 hover:bg-gray-800 rounded cursor-pointer border-t border-gray-700 pt-4 mt-4">
+                    <span class="text-sm font-bold text-gray-400">DETAYLAR</span>
+                </div>
+                <div class="text-2xl font-bold text-white px-2">93,041.08</div>
+                <div class="text-red-500 px-2 text-sm">-632.06 (-0.67%)</div>
+            </div>
+        </aside>
+    </div>
 
 </body>
 </html>
