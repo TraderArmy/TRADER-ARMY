@@ -6,39 +6,41 @@
     <title>Trade Army | Pro Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* SERT BASMA SORUNU ÇÖZÜMÜ: TOUCH-ACTION AYARI */
+        /* DOKUNMATİK GECİKMESİNİ SIFIRLAYAN KRİTİK CSS */
         html, body { 
             background-color: #0c0d10; 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; 
-            -webkit-user-select: none; 
-            touch-action: none; /* Sayfanın kendi kaymasını iptal et */
+            overflow: hidden !important;
+            touch-action: none !important; /* Tarayıcının tüm varsayılan hareketlerini durdur */
+            -webkit-overflow-scrolling: none;
+            user-select: none;
         }
         
         #chart-grid { display: grid; height: 100%; width: 100%; gap: 1px; background-color: #1e222d; }
         .grid-1 { grid-template-columns: 1fr; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
-        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
         .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
-        /* Tıklama hızını artıran kritik CSS */
         iframe { 
             pointer-events: auto !important; 
             touch-action: auto !important;
-            -webkit-tap-highlight-color: transparent;
+            border: none;
+            width: 100%;
+            height: 100%;
         }
 
-        .btn-active { background: #2962ff !important; color: white !important; }
-        .layout-btn { background: #131722; color: #81858e; border: 1px solid #1e222d; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
-        .nav-btn { flex: 1; background: #131722; color: #d1d4dc; font-size: 11px; font-weight: bold; border: none; outline: none; }
-        .nav-btn:active { background: #1e222d; }
+        .layout-btn { background: #131722; color: #81858e; border: 1px solid #1e222d; padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-active { background: #2962ff !important; color: white !important; box-shadow: 0 0 10px rgba(41, 98, 255, 0.4); }
+        
+        .nav-btn { flex: 1; background: #131722; color: #d1d4dc; font-size: 11px; font-weight: bold; border: none; }
+        .nav-btn:active { background: #2962ff; color: white; }
     </style>
 </head>
 <body class="flex flex-col">
 
     <header class="h-14 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0">
-        <div class="flex items-center space-x-2">
-            <span class="text-blue-500 font-black italic text-xl">TRADE <span class="text-white">ARMY</span></span>
+        <div class="flex items-center">
+            <span class="text-blue-500 font-black italic text-xl tracking-tighter">TRADE <span class="text-white">ARMY</span></span>
         </div>
         
         <div class="flex items-center space-x-1">
@@ -50,10 +52,10 @@
 
     <main class="flex-1 overflow-hidden relative">
         <div id="chart-grid" class="grid-1">
-            <div id="tv_chart_1" class="w-full h-full"></div>
-            <div id="tv_chart_2" class="w-full h-full hidden"></div>
-            <div id="tv_chart_3" class="w-full h-full hidden"></div>
-            <div id="tv_chart_4" class="w-full h-full hidden"></div>
+            <div id="tv_chart_1"></div>
+            <div id="tv_chart_2" class="hidden"></div>
+            <div id="tv_chart_3" class="hidden"></div>
+            <div id="tv_chart_4" class="hidden"></div>
         </div>
     </main>
 
@@ -74,6 +76,11 @@
         let currentSymbol = 'BINANCE:BTCUSDT';
         let currentCount = 1;
 
+        // DOKUNMATİK HASSASİYET YAMASI: Tıklama gecikmesini (300ms) iptal eder
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+
         function initChart(id, symbol) {
             new TradingView.widget({
                 "autosize": true,
@@ -85,24 +92,21 @@
                 "locale": "tr",
                 "toolbar_bg": "#131722",
                 "enable_publishing": false,
-                "hide_side_toolbar": false, // Çizim araçları
+                "hide_side_toolbar": false,
                 "allow_symbol_change": true,
                 "container_id": id,
-                "library_path": "https://s3.tradingview.com/tv.js", // Kütüphaneyi zorla doğrular
                 "withdateranges": true,
-                // DOKUNMATİK HASSASİYETİ İÇİN AKTİF EDİLEN ÖZELLİKLER
                 "enabled_features": [
                     "header_resolutions", 
                     "header_indicators", 
                     "header_settings", 
                     "header_chart_type",
                     "side_toolbar_in_fullscreen_mode",
-                    "header_symbol_search",
-                    "dont_show_boolean_column_and_unfilled_cells" // Hafifletme
+                    "header_symbol_search"
                 ],
                 "overrides": {
                     "paneProperties.background": "#131722",
-                    "mainSeriesProperties.style": 1
+                    "paneProperties.topMargin": 10
                 }
             });
         }
@@ -110,8 +114,6 @@
         function changeLayout(count, btn) {
             currentCount = count;
             document.getElementById('chart-grid').className = `grid-${count}`;
-            
-            // Buton Tasarımı
             document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('btn-active'));
             if(btn) btn.classList.add('btn-active');
 
@@ -121,10 +123,8 @@
                     container.classList.remove('hidden');
                     initChart(`tv_chart_${i}`, currentSymbol);
                 } else {
-                    if (container) {
-                        container.classList.add('hidden');
-                        container.innerHTML = "";
-                    }
+                    container.classList.add('hidden');
+                    container.innerHTML = "";
                 }
             }
         }
@@ -136,7 +136,6 @@
             }
         }
 
-        // Başlat
         window.onload = () => initChart('tv_chart_1', currentSymbol);
     </script>
 </body>
