@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TRADE ARMY | Ultimate Terminal v1.1</title>
+    <title>TRADE ARMY | V.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         html, body { background: #0c0d10; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; position: fixed; color: #d1d4dc; font-family: 'Inter', sans-serif; }
@@ -14,28 +14,32 @@
         .grid-2 { grid-template-columns: 1fr 1fr; }
         .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
-        .side-panel { width: 280px; background: #131722; border-left: 1px solid #1e222d; display: flex; flex-direction: column; }
+        .side-panel { width: 300px; background: #131722; border-left: 1px solid #1e222d; display: flex; flex-direction: column; }
         @media (max-width: 1024px) { .side-panel { display: none; } }
 
         .control-btn { background: #1e222d; color: #81858e; border: 1px solid #2a2e39; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .active-layout { background: #2962ff !important; color: white !important; border-color: #2962ff; }
+        .active-layout { background: #2962ff !important; color: white !important; }
 
         .color-popup { background: #1c202b; padding: 15px; border-radius: 12px; border: 1px solid #2962ff; position: absolute; top: 70px; right: 20px; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .color-popup.visible { display: block; }
 
-        /* Sol menü ikonları için özel stil */
         .icon-btn { font-size: 18px; color: #81858e; transition: 0.2s; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
         .icon-btn:hover { color: #2962ff; background: #1e222d; transform: scale(1.1); }
 
+        /* LOGO TASARIMI */
+        .brand-logo { height: 34px; width: 34px; object-fit: cover; border-radius: 8px; border: 1px solid #2a2e39; box-shadow: 0 0 10px rgba(41, 98, 255, 0.2); }
+        
         iframe { pointer-events: auto !important; touch-action: auto !important; }
     </style>
 </head>
 <body class="flex flex-col">
 
     <header class="h-16 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0 z-50">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
+            <img src="https://i.ibb.co/LzNfXjM/trader-logo.png" alt="TA" class="brand-logo">
+            
             <span class="text-blue-500 font-black italic text-xl tracking-tighter uppercase">Trade <span class="text-white">Army</span></span>
-            <div class="flex space-x-1 bg-black/20 p-1 rounded">
+            <div class="flex space-x-1 bg-black/20 p-1 rounded border border-gray-800 ml-2">
                 <button onclick="changeLayout(1, this)" class="control-btn active-layout">1</button>
                 <button onclick="changeLayout(2, this)" class="control-btn">2</button>
                 <button onclick="changeLayout(4, this)" class="control-btn">4</button>
@@ -43,52 +47,27 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <button onclick="toggleColorPanel()" class="control-btn border-blue-500/50">🎨 Tema</button>
+            <button onclick="toggleColorPanel()" class="control-btn border-blue-500/50">🎨 TEMA</button>
             <div id="active-symbol-text" class="text-[10px] font-mono text-gray-500 bg-black/40 px-2 py-1 rounded tracking-tighter uppercase">NASDAQ:IXIC</div>
         </div>
     </header>
 
     <div id="colorPicker" class="color-popup w-64">
-        <div class="text-[11px] font-bold text-blue-500 mb-4 uppercase tracking-widest border-b border-gray-700 pb-2">Grafik Özelleştirme</div>
-        <div class="space-y-4">
-            <div class="flex justify-between items-center text-xs text-gray-300">
-                <span>Yükseliş (Mum):</span>
-                <input type="color" id="upColor" value="#089981" class="bg-transparent border-none w-8 h-8 cursor-pointer" onchange="saveAndApply()">
-            </div>
-            <div class="flex justify-between items-center text-xs text-gray-300">
-                <span>Düşüş (Mum):</span>
-                <input type="color" id="downColor" value="#f23645" class="bg-transparent border-none w-8 h-8 cursor-pointer" onchange="saveAndApply()">
-            </div>
-            <div class="flex justify-between items-center text-xs text-gray-300 border-t border-gray-700 pt-3">
-                <span>Arka Plan:</span>
-                <input type="color" id="bgColor" value="#131722" class="bg-transparent border-none w-8 h-8 cursor-pointer" onchange="saveAndApply()">
-            </div>
+        <div class="text-[11px] font-bold text-blue-500 mb-4 uppercase tracking-widest border-b border-gray-700 pb-2">Görünüm Ayarları</div>
+        <div class="space-y-4 text-xs">
+            <div class="flex justify-between items-center"><span>Boğa (Yükseliş):</span><input type="color" id="upColor" value="#089981" class="bg-transparent" onchange="saveAndApply()"></div>
+            <div class="flex justify-between items-center"><span>Ayı (Düşüş):</span><input type="color" id="downColor" value="#f23645" class="bg-transparent" onchange="saveAndApply()"></div>
+            <div class="flex justify-between items-center border-t border-gray-700 pt-3"><span>Arka Plan:</span><input type="color" id="bgColor" value="#131722" class="bg-transparent" onchange="saveAndApply()"></div>
         </div>
-        <button onclick="toggleColorPanel()" class="w-full mt-5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] py-2 rounded uppercase transition-all">Değişiklikleri Kaydet</button>
+        <button onclick="toggleColorPanel()" class="w-full mt-5 bg-blue-600 text-white font-bold text-[10px] py-2 rounded uppercase">AYARLARI KAYDET</button>
     </div>
 
     <div class="flex flex-1 overflow-hidden relative">
-        
         <aside class="w-14 border-r border-[#1e222d] bg-[#0c0d10] flex flex-col items-center py-4 space-y-4 shrink-0 overflow-y-auto">
-            <div class="text-[8px] text-gray-600 font-bold uppercase mb-1">Index</div>
             <button onclick="updateSymbol('NASDAQ:IXIC')" title="Nasdaq" class="icon-btn">📈</button>
-            <button onclick="updateSymbol('CAPITALCOM:US500')" title="S&P 500" class="icon-btn">📊</button>
-            
-            <div class="w-6 h-[1px] bg-gray-800 my-2"></div>
-            <div class="text-[8px] text-gray-600 font-bold uppercase mb-1">Forex</div>
             <button onclick="updateSymbol('FX:EURUSD')" title="EUR/USD" class="icon-btn">🇪🇺</button>
-            <button onclick="updateSymbol('FX:GBPUSD')" title="GBP/USD" class="icon-btn">🇬🇧</button>
-            <button onclick="updateSymbol('FX:USDJPY')" title="USD/JPY" class="icon-btn">🇯🇵</button>
-            
-            <div class="w-6 h-[1px] bg-gray-800 my-2"></div>
-            <div class="text-[8px] text-gray-600 font-bold uppercase mb-1">Kripto</div>
             <button onclick="updateSymbol('BINANCE:BTCUSDT')" title="BTC" class="icon-btn">₿</button>
-            <button onclick="updateSymbol('BINANCE:ETHUSDT')" title="ETH" class="icon-btn">Ξ</button>
-            
-            <div class="w-6 h-[1px] bg-gray-800 my-2"></div>
-            <div class="text-[8px] text-gray-600 font-bold uppercase mb-1">Emtia</div>
             <button onclick="updateSymbol('TVC:GOLD')" title="Altın" class="icon-btn">🟡</button>
-            <button onclick="updateSymbol('TVC:SILVER')" title="Gümüş" class="icon-btn">⚪</button>
             <button onclick="updateSymbol('TVC:USOIL')" title="Petrol" class="icon-btn">🛢️</button>
         </aside>
 
@@ -102,36 +81,35 @@
         </main>
 
         <aside class="side-panel shrink-0">
-            <div class="h-1/2 border-b border-[#1e222d]">
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-                { "interval": "4h", "width": "100%", "isTransparent": true, "height": "100%", "symbol": "NASDAQ:IXIC", "showIntervalTabs": true, "locale": "tr", "colorTheme": "dark" }
-                </script>
+            <div class="h-2/3 border-b border-[#1e222d]">
+                <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/20">Takip Listesi</div>
+                <div class="tradingview-widget-container h-full">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                    { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "90%", "locale": "tr",
+                      "symbolsGroups": [{ "name": "Favoriler", "symbols": [{"name": "NASDAQ:IXIC"},{"name": "BINANCE:BTCUSDT"},{"name": "FX:EURUSD"},{"name": "TVC:GOLD"}] }] }
+                    </script>
+                </div>
             </div>
-            <div class="h-1/2">
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "tr", "importanceFilter": "-1,0,1", "currencyFilter": "USD,EUR,TRY" }
-                </script>
+            <div class="h-1/3">
+                <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/20">Haber Akışı</div>
+                <div class="tradingview-widget-container h-full">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                    { "feedMode": "all_symbols", "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "tr" }
+                    </script>
+                </div>
             </div>
         </aside>
     </div>
 
-    <nav class="h-14 border-t border-[#1e222d] bg-[#131722] flex shrink-0 lg:hidden overflow-x-auto">
-        <button onclick="updateSymbol('NASDAQ:IXIC')" class="px-6 text-[10px] font-bold">NASDAQ</button>
-        <button onclick="updateSymbol('FX:EURUSD')" class="px-6 text-[10px] font-bold border-l border-gray-800">EURUSD</button>
-        <button onclick="updateSymbol('BINANCE:BTCUSDT')" class="px-6 text-[10px] font-bold border-l border-gray-800">BTC</button>
-        <button onclick="updateSymbol('TVC:GOLD')" class="px-6 text-[10px] font-bold border-l border-gray-800">ALTIN</button>
-    </nav>
-
     <footer class="h-10 bg-black border-t border-gray-900 flex items-center justify-between px-6 text-[9px] text-gray-500 shrink-0">
         <div class="flex items-center space-x-3">
-            <span class="text-blue-500 font-bold tracking-tighter uppercase">Trade Army <span class="text-gray-600 ml-1">v1.1</span></span>
+            <span class="text-blue-500 font-bold uppercase tracking-tighter">Trade Army <span class="text-gray-400 ml-1">V.1</span></span>
             <span class="text-gray-800">|</span>
             <span>© 2026 Tüm Hakları Saklıdır</span>
         </div>
         <div class="flex items-center space-x-2">
-            <span class="flex items-center justify-center w-3 h-3 bg-red-900/30 text-red-500 rounded-full text-[8px] font-bold">!</span>
             <span class="font-bold text-gray-400 uppercase tracking-tight">Yasal Uyarı:</span>
-            <span class="truncate hidden sm:inline text-gray-600">Bu terminaldeki veriler yatırım tavsiyesi niteliği taşımaz.</span>
+            <span class="truncate hidden sm:inline text-gray-600">Bu içerik yatırım tavsiyesi değildir.</span>
         </div>
     </footer>
 
