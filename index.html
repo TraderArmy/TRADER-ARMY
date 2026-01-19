@@ -3,71 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trade Army | Terminal</title>
+    <title>Trade Army | Pro Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* DOKUNMATİK HASSASİYETİ İÇİN KRİTİK AYARLAR */
-        * { 
-            -webkit-tap-highlight-color: transparent; 
-            touch-action: manipulation; 
-        }
+        /* DOKUNMATİK VE FARE HASSASİYETİ */
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        html, body { background-color: #0c0d10; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
         
-        body, html { 
-            background-color: #0c0d10; 
-            color: #d1d4dc; 
-            overflow: hidden !important; /* Sayfa kaymasını engelle ki sadece grafik hareket etsin */
-            height: 100%; 
-            width: 100%;
-            margin: 0; 
-        }
-
-        #chart-grid { flex: 1; display: grid; background-color: #1e222d; }
+        /* GRID SİSTEMİ */
+        #chart-grid { display: grid; height: 100%; width: 100%; gap: 2px; background-color: #1e222d; }
         .grid-1 { grid-template-columns: 1fr; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        iframe { pointer-events: auto !important; touch-action: auto !important; }
         
-        /* Çizim araçlarının üzerine binen görünmez engelleri kaldırır */
-        iframe { 
-            pointer-events: auto !important; 
-            touch-action: auto !important;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        .layout-btn { background: #1e222d; border: 1px solid #2a2e39; padding: 4px 10px; border-radius: 4px; font-size: 11px; color: #81858e; transition: 0.2s; }
+        .layout-btn.active { background: #2962ff; color: white; border-color: #2962ff; }
+        
+        .nav-btn { flex: 1; color: #81858e; font-size: 10px; font-weight: bold; background: transparent; border: none; }
+        .nav-btn:active { color: white; background: #1e222d; }
 
-        /* Telefon Görünümü Ayarları */
-        @media (max-width: 768px) {
-            .pc-only { display: none !important; }
-            .mobile-bottom-nav { display: flex !important; }
+        /* Mobilde ekran bölme butonlarını küçült */
+        @media (max-width: 640px) {
+            .layout-section { display: none; } /* Mobilde çoklu ekran çok dar olduğu için gizlenebilir veya kalsın istersen silme */
         }
-
-        .m-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #81858e; font-weight: bold; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header class="h-12 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0">
-        <span class="text-blue-500 font-black italic text-lg uppercase tracking-tighter">Trade <span class="text-white">Army</span></span>
-        <div class="text-[10px] text-gray-500 font-mono" id="asset-label">BINANCE:BTCUSDT</div>
+    <header class="h-14 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0">
+        <div class="flex items-center space-x-3">
+            <span class="text-blue-500 font-black italic text-xl tracking-tighter">TRADE <span class="text-white">ARMY</span></span>
+            <div class="h-6 w-[1px] bg-gray-800 hidden md:block"></div>
+            <span id="active-symbol-text" class="text-[10px] text-gray-500 font-mono hidden md:block">BINANCE:BTCUSDT</span>
+        </div>
+
+        <div class="flex items-center space-x-1 bg-black/40 p-1 rounded border border-gray-800 layout-section">
+            <button onclick="changeLayout(1, this)" class="layout-btn active">1</button>
+            <button onclick="changeLayout(2, this)" class="layout-btn">2</button>
+            <button onclick="changeLayout(3, this)" class="layout-btn">3</button>
+            <button onclick="changeLayout(4, this)" class="layout-btn">4</button>
+        </div>
     </header>
 
-    <main id="chart-grid" class="grid-1">
-        <div id="tv_chart_main" class="w-full h-full"></div>
+    <main class="flex-1 overflow-hidden">
+        <div id="chart-grid" class="grid-1">
+            <div id="tv_chart_1" class="w-full h-full"></div>
+            <div id="tv_chart_2" class="w-full h-full hidden"></div>
+            <div id="tv_chart_3" class="w-full h-full hidden"></div>
+            <div id="tv_chart_4" class="w-full h-full hidden"></div>
+        </div>
     </main>
 
-    <nav class="mobile-bottom-nav h-14 border-t border-[#1e222d] bg-[#131722] hidden shrink-0">
-        <button onclick="updateSymbol('BINANCE:BTCUSDT')" class="m-nav-btn">BTC</button>
-        <button onclick="updateSymbol('BINANCE:ETHUSDT')" class="m-nav-btn">ETH</button>
-        <button onclick="updateSymbol('TVC:GOLD')" class="m-nav-btn">ALTIN</button>
-        <button onclick="updateSymbol('FX:USDTRY')" class="m-nav-btn">DOLAR</button>
+    <nav class="h-12 border-t border-[#1e222d] bg-[#131722] flex shrink-0">
+        <button onclick="updateSymbol('BINANCE:BTCUSDT')" class="nav-btn">BTC</button>
+        <button onclick="updateSymbol('BINANCE:ETHUSDT')" class="nav-btn">ETH</button>
+        <button onclick="updateSymbol('TVC:GOLD')" class="nav-btn">ALTIN</button>
+        <button onclick="updateSymbol('FX:USDTRY')" class="nav-btn">USD/TRY</button>
+        <button onclick="updateSymbol('BINANCE:SOLUSDT')" class="nav-btn">SOL</button>
     </nav>
 
-    <footer class="h-6 bg-[#0c0d10] border-t border-gray-900 flex items-center justify-between px-4 text-[8px] text-gray-600 shrink-0">
-        <div>© 2026 Trade Army</div>
+    <footer class="h-6 bg-black flex items-center justify-between px-4 text-[9px] text-gray-600 shrink-0">
+        <div class="font-bold">© 2026 TRADE ARMY</div>
         <div>Yatırım tavsiyesi değildir.</div>
     </footer>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        function initChart(symbol) {
+        let currentSymbol = 'BINANCE:BTCUSDT';
+        let currentCount = 1;
+
+        function initChart(id, symbol) {
             new TradingView.widget({
                 "autosize": true,
                 "symbol": symbol,
@@ -78,36 +86,54 @@
                 "locale": "tr",
                 "toolbar_bg": "#131722",
                 "enable_publishing": false,
-                "hide_side_toolbar": false, // Çizim araçları burada açılıyor
+                "hide_side_toolbar": false,
                 "allow_symbol_change": true,
-                "save_image": true,
-                "container_id": "tv_chart_main",
+                "container_id": id,
                 "withdateranges": true,
-                // DOKUNMATİK ÇİZİM İÇİN KRİTİK ÖZELLİKLER
                 "enabled_features": [
                     "header_resolutions", 
                     "header_indicators", 
                     "header_settings", 
                     "header_symbol_search",
-                    "side_toolbar_in_fullscreen_mode",
                     "header_chart_type",
-                    "mouse_wheel_scale", // PC'de tekerlek ile zoom
+                    "side_toolbar_in_fullscreen_mode",
                     "use_localstorage_for_settings_save"
                 ],
                 "overrides": {
-                    "paneProperties.background": "#131722",
-                    "mainSeriesProperties.style": 1
+                    "paneProperties.background": "#131722"
                 }
             });
         }
 
-        function updateSymbol(s) {
-            document.getElementById('asset-label').innerText = s;
-            initChart(s);
+        function changeLayout(count, btn) {
+            currentCount = count;
+            document.getElementById('chart-grid').className = `grid-${count}`;
+            
+            // Buton aktiflik durumu
+            document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            for (let i = 1; i <= 4; i++) {
+                const container = document.getElementById(`tv_chart_${i}`);
+                if (i <= count) {
+                    container.classList.remove('hidden');
+                    initChart(`tv_chart_${i}`, currentSymbol);
+                } else {
+                    container.classList.add('hidden');
+                    container.innerHTML = "";
+                }
+            }
         }
 
-        // İlk açılış
-        window.onload = () => initChart('BINANCE:BTCUSDT');
+        function updateSymbol(s) {
+            currentSymbol = s;
+            document.getElementById('active-symbol-text').innerText = s;
+            for (let i = 1; i <= currentCount; i++) {
+                initChart(`tv_chart_${i}`, s);
+            }
+        }
+
+        window.onload = () => initChart('tv_chart_1', currentSymbol);
     </script>
 </body>
 </html>
