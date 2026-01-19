@@ -23,13 +23,16 @@ html, body {
   width: 100%;
   background: #111;
   z-index: 1000;
-  padding: 6px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
 }
 
 select {
   width: 100%;
-  padding: 10px;
-  font-size: 16px;
+  padding: 8px;
+  font-size: 14px;
   background: #000;
   color: #0f0;
   border: 1px solid #333;
@@ -40,8 +43,8 @@ select {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   width: 100vw;
-  height: calc(100vh - 50px);
-  margin-top: 50px;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
 }
 
 .chart {
@@ -54,39 +57,32 @@ select {
 <body>
 
 <div id="topbar">
-  <select onchange="changePair(this.value)">
-    <optgroup label="FOREX">
-      <option value="OANDA:EURUSD">EUR/USD</option>
-      <option value="OANDA:GBPUSD">GBP/USD</option>
-      <option value="OANDA:USDJPY">USD/JPY</option>
-      <option value="OANDA:USDCHF">USD/CHF</option>
-      <option value="OANDA:AUDUSD">AUD/USD</option>
-      <option value="OANDA:USDCAD">USD/CAD</option>
-      <option value="OANDA:NZDUSD">NZD/USD</option>
-      <option value="OANDA:XAUUSD">XAU/USD (Altın)</option>
-      <option value="OANDA:XAGUSD">XAG/USD (Gümüş)</option>
-    </optgroup>
+  <select onchange="changeChart(1, this.value)">
+    <option value="BINANCE:BTCUSDT">BTC/USDT</option>
+    <option value="BINANCE:ETHUSDT">ETH/USDT</option>
+    <option value="OANDA:EURUSD">EUR/USD</option>
+    <option value="OANDA:US100USD">US100</option>
+  </select>
 
-    <optgroup label="KRİPTO">
-      <option value="BINANCE:BTCUSDT" selected>BTC/USDT</option>
-      <option value="BINANCE:ETHUSDT">ETH/USDT</option>
-      <option value="BINANCE:BNBUSDT">BNB/USDT</option>
-      <option value="BINANCE:SOLUSDT">SOL/USDT</option>
-      <option value="BINANCE:XRPUSDT">XRP/USDT</option>
-      <option value="BINANCE:ADAUSDT">ADA/USDT</option>
-      <option value="BINANCE:DOGEUSDT">DOGE/USDT</option>
-      <option value="BINANCE:AVAXUSDT">AVAX/USDT</option>
-      <option value="BINANCE:LINKUSDT">LINK/USDT</option>
-    </optgroup>
+  <select onchange="changeChart(2, this.value)">
+    <option value="BINANCE:ETHUSDT">ETH/USDT</option>
+    <option value="BINANCE:SOLUSDT">SOL/USDT</option>
+    <option value="OANDA:GBPUSD">GBP/USD</option>
+    <option value="OANDA:US500USD">US500</option>
+  </select>
 
-    <optgroup label="ENDEKS">
-      <option value="OANDA:US100USD">US100 (Nasdaq)</option>
-      <option value="OANDA:US500USD">US500 (S&P 500)</option>
-      <option value="OANDA:US30USD">US30 (Dow Jones)</option>
-      <option value="OANDA:DE40EUR">GER40 (DAX)</option>
-      <option value="OANDA:UK100GBP">UK100 (FTSE)</option>
-      <option value="OANDA:FR40EUR">FRA40 (CAC 40)</option>
-    </optgroup>
+  <select onchange="changeChart(3, this.value)">
+    <option value="BINANCE:SOLUSDT">SOL/USDT</option>
+    <option value="BINANCE:XRPUSDT">XRP/USDT</option>
+    <option value="OANDA:XAUUSD">XAU/USD</option>
+    <option value="OANDA:DE40EUR">GER40</option>
+  </select>
+
+  <select onchange="changeChart(4, this.value)">
+    <option value="BINANCE:BNBUSDT">BNB/USDT</option>
+    <option value="BINANCE:ADAUSDT">ADA/USDT</option>
+    <option value="OANDA:USDJPY">USD/JPY</option>
+    <option value="OANDA:US30USD">US30</option>
   </select>
 </div>
 
@@ -99,32 +95,31 @@ select {
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-let currentSymbol = "BINANCE:BTCUSDT";
+const charts = {
+  1: { id: "tv1", symbol: "BINANCE:BTCUSDT", interval: "15" },
+  2: { id: "tv2", symbol: "BINANCE:ETHUSDT", interval: "15" },
+  3: { id: "tv3", symbol: "BINANCE:SOLUSDT", interval: "15" },
+  4: { id: "tv4", symbol: "BINANCE:BNBUSDT", interval: "15" }
+};
 
-function loadCharts() {
-  const intervals = ["5", "15", "60", "240"];
-  ["tv1","tv2","tv3","tv4"].forEach((id, i) => {
-    new TradingView.widget({
-      autosize: true,
-      symbol: currentSymbol,
-      interval: intervals[i],
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      container_id: id
-    });
+function loadChart(n) {
+  document.getElementById(charts[n].id).innerHTML = "";
+  new TradingView.widget({
+    autosize: true,
+    symbol: charts[n].symbol,
+    interval: charts[n].interval,
+    theme: "dark",
+    style: "1",
+    container_id: charts[n].id
   });
 }
 
-function changePair(symbol) {
-  currentSymbol = symbol;
-  ["tv1","tv2","tv3","tv4"].forEach(id => {
-    document.getElementById(id).innerHTML = "";
-  });
-  loadCharts();
+function changeChart(n, symbol) {
+  charts[n].symbol = symbol;
+  loadChart(n);
 }
 
-loadCharts();
+Object.keys(charts).forEach(n => loadChart(n));
 </script>
 
 </body>
