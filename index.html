@@ -2,45 +2,65 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>TraderArmy Pro</title>
+<title>TraderArmy Stable</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-html,body{margin:0;padding:0;height:100%;background:#0e0e0e;color:#fff;font-family:Arial}
-header{background:#111;padding:10px;display:flex;gap:10px;border-bottom:1px solid #222}
-button,select{background:#1c1c1c;color:#fff;border:1px solid #333;padding:6px;border-radius:4px}
-button{cursor:pointer}
-#charts{display:grid;height:calc(100vh - 140px)}
-.chart-box{border:1px solid #222;position:relative;display:flex;flex-direction:column}
-.chart{flex:1}
-footer{background:#111;color:#aaa;font-size:12px;padding:8px;text-align:center;border-top:1px solid #222}
-
-/* DRAGGABLE TOOLBAR */
-#drawToolbar{
- position:fixed;
- top:80px;
- left:20px;
- background:#111;
- border:1px solid #333;
- padding:6px;
- border-radius:6px;
- display:flex;
- flex-direction:column;
- gap:4px;
- z-index:9999;
- cursor:move;
+html,body{
+  margin:0;padding:0;height:100%;
+  background:#0e0e0e;color:#fff;font-family:Arial
 }
-#drawToolbar button.active{background:#2962ff}
-
-/* CANVAS */
-.drawLayer{
- position:absolute;
- top:0;left:0;
- width:100%;height:100%;
- z-index:20;
- pointer-events:none;
+header{
+  background:#111;padding:10px;
+  display:flex;gap:10px;
+  border-bottom:1px solid #222
 }
-.drawLayer.active{pointer-events:auto}
+button,select{
+  background:#1c1c1c;color:#fff;
+  border:1px solid #333;
+  padding:6px;border-radius:4px;
+  cursor:pointer
+}
+#charts{
+  display:grid;
+  height:calc(100vh - 100px);
+}
+.chart-box{
+  position:relative;
+  border:1px solid #222;
+}
+.chart{
+  width:100%;
+  height:100%;
+}
+
+/* TOOLBAR */
+#toolbar{
+  position:fixed;
+  top:80px;left:10px;
+  background:#111;
+  border:1px solid #333;
+  padding:6px;
+  border-radius:6px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  z-index:1000;
+  cursor:move;
+}
+#toolbar button.active{
+  background:#2962ff;
+}
+
+/* DRAW */
+.draw-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.draw-layer.active{
+  pointer-events:auto;
+}
 </style>
 </head>
 
@@ -53,145 +73,118 @@ footer{background:#111;color:#aaa;font-size:12px;padding:8px;text-align:center;b
 <button onclick="setLayout(4)">4</button>
 </header>
 
-<div id="drawToolbar">
-<button onclick="setTool('trend',this)">Trend</button>
-<button onclick="setTool('hline',this)">H-Line</button>
-<button onclick="setTool('vline',this)">V-Line</button>
-<button onclick="setTool('rect',this)">Zone</button>
-<button onclick="setTool('fib',this)">Fib</button>
-<button onclick="clearDraw()">Sil</button>
+<div id="toolbar">
+<button onclick="selectTool('trend',this)">Trend</button>
+<button onclick="selectTool('hline',this)">Yatay</button>
 <button onclick="exitDraw()">Çık</button>
 </div>
 
 <div id="charts"></div>
 
-<footer>⚠️ Yatırım tavsiyesi değildir.</footer>
-
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-/* ================= GRAFİK ================= */
-let layout=1;
-const symbols=[
- "FOREXCOM:NAS100","FOREXCOM:SPX500","FOREXCOM:US30","FOREXCOM:GER40",
- "FOREXCOM:EURUSD","FOREXCOM:GBPUSD","FOREXCOM:USDJPY",
- "BINANCE:BTCUSDT","BINANCE:ETHUSDT"
-];
-const intervals=["1","5","15","60","240","D"];
+/* ================= LAYOUT ================= */
+let layout = 1;
+const chartsDiv = document.getElementById("charts");
 
-function setLayout(n){layout=n;render()}
+function setLayout(n){
+  layout = n;
+  render();
+}
 
+/* ================= RENDER ================= */
 function render(){
- const c=document.getElementById("charts");
- c.innerHTML="";
- c.style.gridTemplateColumns=layout==1?"1fr":layout==2?"1fr 1fr":"1fr 1fr";
+  chartsDiv.innerHTML="";
+  chartsDiv.style.gridTemplateColumns =
+    layout===1?"1fr":
+    layout===2?"1fr 1fr":
+    "1fr 1fr";
 
- for(let i=0;i<layout;i++){
-  const b=document.createElement("div");
-  b.className="chart-box";
-  b.innerHTML=`
-   <select onchange="render()">${symbols.map(s=>`<option>${s}</option>`).join("")}</select>
-   <select onchange="render()">${intervals.map(t=>`<option>${t}</option>`).join("")}</select>
-   <div id="chart${i}" class="chart"></div>
-   <canvas class="drawLayer"></canvas>
-  `;
-  c.appendChild(b);
+  for(let i=0;i<layout;i++){
+    const box=document.createElement("div");
+    box.className="chart-box";
+    box.innerHTML=`
+      <div id="tv${i}" class="chart"></div>
+      <canvas class="draw-layer"></canvas>
+    `;
+    chartsDiv.appendChild(box);
 
-  new TradingView.widget({
-   container_id:"chart"+i,
-   autosize:true,
-   symbol:symbols[i]||symbols[0],
-   interval:"5",
-   theme:"dark",
-   locale:"tr"
-  });
+    new TradingView.widget({
+      container_id:"tv"+i,
+      autosize:true,
+      symbol:"BINANCE:BTCUSDT",
+      interval:"5",
+      theme:"dark",
+      locale:"tr"
+    });
 
-  initCanvas(b.querySelector(".drawLayer"));
- }
+    initDraw(box.querySelector(".draw-layer"));
+  }
 }
 render();
 
 /* ================= TOOLBAR DRAG ================= */
-const toolbar=document.getElementById("drawToolbar");
+const toolbar=document.getElementById("toolbar");
 let drag=false,dx=0,dy=0;
+toolbar.onmousedown=e=>{
+  drag=true;
+  dx=e.clientX-toolbar.offsetLeft;
+  dy=e.clientY-toolbar.offsetTop;
+};
+document.onmousemove=e=>{
+  if(!drag) return;
+  toolbar.style.left=(e.clientX-dx)+"px";
+  toolbar.style.top=(e.clientY-dy)+"px";
+};
+document.onmouseup=()=>drag=false;
 
-toolbar.addEventListener("mousedown",e=>{
- drag=true;
- dx=e.clientX-toolbar.offsetLeft;
- dy=e.clientY-toolbar.offsetTop;
-});
-document.addEventListener("mousemove",e=>{
- if(!drag) return;
- toolbar.style.left=(e.clientX-dx)+"px";
- toolbar.style.top=(e.clientY-dy)+"px";
-});
-document.addEventListener("mouseup",()=>drag=false);
-
-/* ================= ÇİZİM MOTORU ================= */
-let tool=null,drawing=false,start={},objects=JSON.parse(localStorage.getItem("draws")||"[]");
-
-function setTool(t,btn){
- tool=t;
- document.querySelectorAll("#drawToolbar button").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
- document.querySelectorAll(".drawLayer").forEach(c=>c.classList.add("active"));
+/* ================= DRAW ================= */
+let tool=null;
+function selectTool(t,btn){
+  tool=t;
+  document.querySelectorAll("#toolbar button")
+    .forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".draw-layer")
+    .forEach(c=>c.classList.add("active"));
 }
-
 function exitDraw(){
- tool=null;
- document.querySelectorAll("#drawToolbar button").forEach(b=>b.classList.remove("active"));
- document.querySelectorAll(".drawLayer").forEach(c=>c.classList.remove("active"));
+  tool=null;
+  document.querySelectorAll("#toolbar button")
+    .forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".draw-layer")
+    .forEach(c=>c.classList.remove("active"));
 }
 
-function clearDraw(){
- objects=[];
- localStorage.setItem("draws","[]");
- redrawAll();
-}
+function initDraw(canvas){
+  const ctx=canvas.getContext("2d");
+  function resize(){
+    canvas.width=canvas.offsetWidth;
+    canvas.height=canvas.offsetHeight;
+  }
+  resize(); window.addEventListener("resize",resize);
 
-function initCanvas(canvas){
- const ctx=canvas.getContext("2d");
- function resize(){
-  canvas.width=canvas.offsetWidth;
-  canvas.height=canvas.offsetHeight;
-  redraw(ctx,canvas);
- }
- window.addEventListener("resize",resize);
- resize();
-
- canvas.onmousedown=e=>{
-  if(!tool) return;
-  drawing=true;
-  start={x:e.offsetX,y:e.offsetY};
- };
- canvas.onmouseup=e=>{
-  if(!drawing) return;
-  drawing=false;
-  objects.push({tool,x1:start.x,y1:start.y,x2:e.offsetX,y2:e.offsetY});
-  localStorage.setItem("draws",JSON.stringify(objects));
-  redraw(ctx,canvas);
-  exitDraw();
- };
-}
-
-function redraw(ctx,canvas){
- ctx.clearRect(0,0,canvas.width,canvas.height);
- ctx.strokeStyle="#f5c542";
- ctx.lineWidth=2;
-
- objects.forEach(o=>{
-  ctx.beginPath();
-  if(o.tool=="hline"){ctx.moveTo(0,o.y2);ctx.lineTo(canvas.width,o.y2);}
-  else if(o.tool=="vline"){ctx.moveTo(o.x2,0);ctx.lineTo(o.x2,canvas.height);}
-  else if(o.tool=="rect"){ctx.strokeRect(o.x1,o.y1,o.x2-o.x1,o.y2-o.y1);}
-  else{ctx.moveTo(o.x1,o.y1);ctx.lineTo(o.x2,o.y2);}
-  ctx.stroke();
- });
-}
-
-function redrawAll(){
- document.querySelectorAll(".drawLayer").forEach(c=>{
-  redraw(c.getContext("2d"),c);
- });
+  let start=null;
+  canvas.onmousedown=e=>{
+    if(!tool) return;
+    start={x:e.offsetX,y:e.offsetY};
+  };
+  canvas.onmouseup=e=>{
+    if(!start) return;
+    ctx.strokeStyle="#f5c542";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    if(tool==="hline"){
+      ctx.moveTo(0,e.offsetY);
+      ctx.lineTo(canvas.width,e.offsetY);
+    }else{
+      ctx.moveTo(start.x,start.y);
+      ctx.lineTo(e.offsetX,e.offsetY);
+    }
+    ctx.stroke();
+    start=null;
+    exitDraw();
+  };
 }
 </script>
 
