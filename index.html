@@ -7,26 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         html, body { background: #0c0d10; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; position: fixed; color: #d1d4dc; font-family: 'Inter', sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         
         #chart-grid { display: grid; height: 100%; width: 100%; gap: 1px; background: #1e222d; }
         .grid-1 { grid-template-columns: 1fr; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
         .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
-        /* LOGO VE MARKA */
-        .brand-logo { height: 38px; width: auto; object-fit: contain; }
+        .side-panel { width: 320px; background: #131722; border-left: 1px solid #1e222d; display: flex; flex-direction: column; }
+        @media (max-width: 1280px) { .side-panel { display: none; } }
 
         .control-btn { background: #1e222d; color: #81858e; border: 1px solid #2a2e39; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .active-layout { background: #2962ff !important; color: white !important; }
-        .replay-btn { background: #f23645 !important; color: white !important; border: none; }
-        .replay-btn:hover { background: #d9212e !important; box-shadow: 0 0 15px rgba(242, 54, 69, 0.4); }
-
-        .side-panel { width: 300px; background: #131722; border-left: 1px solid #1e222d; display: flex; flex-direction: column; }
-        @media (max-width: 1024px) { .side-panel { display: none; } }
 
         .icon-btn { font-size: 18px; color: #81858e; transition: 0.2s; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
         .icon-btn:hover { color: #2962ff; background: #1e222d; }
 
+        .brand-logo { height: 38px; width: auto; object-fit: contain; }
+        .panel-header { padding: 8px 12px; text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/40 border-b border-[#1e222d] flex justify-between items-center; }
+        
         iframe { pointer-events: auto !important; }
     </style>
 </head>
@@ -34,11 +33,11 @@
 
     <header class="h-16 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0 z-50">
         <div class="flex items-center space-x-4">
-            <img src="BURAYA_LOGO_URL" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+            <img src="https://via.placeholder.com/40x40/2962ff/ffffff?text=TA" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
             
-            <div class="flex flex-col">
-                <span class="text-white font-black italic text-lg tracking-tighter">TRADE ARMY</span>
-                <span class="text-blue-500 text-[10px] font-bold tracking-[3px]">V.1</span>
+            <div class="flex flex-col leading-tight">
+                <span class="text-white font-black italic text-lg tracking-tighter uppercase">TRADE ARMY</span>
+                <span class="text-blue-500 text-[10px] font-bold tracking-[3px] ml-1">V.1</span>
             </div>
 
             <div class="flex space-x-1 bg-black/20 p-1 rounded border border-gray-800 ml-4">
@@ -48,22 +47,18 @@
             </div>
         </div>
 
-        <div class="flex items-center space-x-3">
-            <button onclick="openReplay()" class="control-btn replay-btn">⏳ REPLAY MODU</button>
-            <button onclick="toggleColorPanel()" class="control-btn">🎨 TEMA</button>
-            <div id="active-symbol-text" class="text-[10px] font-mono text-gray-500 bg-black/40 px-2 py-1 rounded">NASDAQ:IXIC</div>
-        </div>
+        <div id="active-symbol-text" class="hidden md:block text-[11px] font-mono text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-widest">NASDAQ:IXIC</div>
     </header>
 
     <div class="flex flex-1 overflow-hidden relative">
-        <aside class="w-14 border-r border-[#1e222d] bg-[#0c0d10] flex flex-col items-center py-4 space-y-4 shrink-0">
+        <aside class="w-14 border-r border-[#1e222d] bg-[#0c0d10] flex flex-col items-center py-4 space-y-4 shrink-0 overflow-y-auto">
             <button onclick="updateSymbol('NASDAQ:IXIC')" title="Nasdaq" class="icon-btn">📈</button>
             <button onclick="updateSymbol('FX:EURUSD')" title="EUR/USD" class="icon-btn">🇪🇺</button>
             <button onclick="updateSymbol('BINANCE:BTCUSDT')" title="BTC" class="icon-btn">₿</button>
             <button onclick="updateSymbol('TVC:GOLD')" title="Altın" class="icon-btn">🟡</button>
         </aside>
 
-        <main class="flex-1 bg-black overflow-hidden">
+        <main class="flex-1 relative overflow-hidden bg-black">
             <div id="chart-grid" class="grid-1">
                 <div id="tv_1" class="w-full h-full"></div>
                 <div id="tv_2" class="w-full h-full hidden"></div>
@@ -73,24 +68,36 @@
         </main>
 
         <aside class="side-panel shrink-0">
-            <div class="h-1/2 border-b border-[#1e222d]">
-                <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/20">Takip Listesi</div>
-                <div id="watchlist" class="h-full">
-                    </div>
+            <div class="h-1/2 flex flex-col border-b border-[#1e222d]">
+                <div class="panel-header">
+                    <span>📅 Ekonomik Takvim</span>
+                    <span class="text-blue-500 text-[8px]">CANLI</span>
+                </div>
+                <div class="flex-1">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                    { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "tr", "importanceFilter": "0,1", "currencyFilter": "USD,EUR,TRY" }
+                    </script>
+                </div>
             </div>
-            <div class="h-1/2">
-                <div class="p-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/20">Piyasa Haberleri</div>
-                <div id="news" class="h-full">
-                    </div>
+
+            <div class="h-1/2 flex flex-col">
+                <div class="panel-header">
+                    <span>🔥 Önemli Haberler</span>
+                </div>
+                <div class="flex-1">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                    { "feedMode": "all_symbols", "colorTheme": "dark", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "tr" }
+                    </script>
+                </div>
             </div>
         </aside>
     </div>
 
     <footer class="h-10 bg-black border-t border-gray-900 flex items-center justify-between px-6 text-[9px] text-gray-500 shrink-0">
-        <div>TRADE ARMY <span class="text-blue-500 font-bold ml-1">V.1</span> | © 2026</div>
+        <div>TRADE ARMY <span class="text-blue-500 font-bold ml-1">V.1</span></div>
         <div class="flex items-center space-x-2">
-            <span class="text-red-500 font-bold">YASAL UYARI:</span>
-            <span>Yatırım tavsiyesi değildir.</span>
+            <span class="text-red-900 font-bold uppercase tracking-tighter">Uyarı:</span>
+            <span>Finansal veriler gecikmeli olabilir. Yatırım tavsiyesi değildir.</span>
         </div>
     </footer>
 
@@ -99,29 +106,13 @@
         let currentSymbol = 'NASDAQ:IXIC';
         let currentCount = 1;
 
-        function openReplay() {
-            // Replay özelliği sadece ana sitede çalıştığı için kullanıcıyı ilgili paritenin replay sayfasına yönlendirir
-            const url = `https://www.tradingview.com/chart/?symbol=${currentSymbol.replace(':', '%3A')}`;
-            window.open(url, '_blank');
-        }
-
         function initChart(id, symbol) {
             new TradingView.widget({
-                "autosize": true,
-                "symbol": symbol,
-                "interval": "240",
-                "theme": "dark",
-                "style": "1",
-                "locale": "tr",
-                "toolbar_bg": "#131722",
-                "enable_publishing": false,
-                "hide_side_toolbar": false,
-                "allow_symbol_change": true,
-                "withdateranges": true, // Geçmişe dönüş için tarih aralığı eklendi
-                "container_id": id,
-                "overrides": {
-                    "paneProperties.background": "#131722"
-                }
+                "autosize": true, "symbol": symbol, "interval": "240", "theme": "dark", "style": "1", "locale": "tr",
+                "toolbar_bg": "#131722", "enable_publishing": false, "hide_side_toolbar": false, "container_id": id,
+                "withdateranges": true, "allow_symbol_change": true,
+                "enabled_features": ["header_resolutions", "header_indicators", "header_settings", "header_symbol_search", "side_toolbar_in_fullscreen_mode"],
+                "overrides": { "paneProperties.background": "#131722" }
             });
         }
 
