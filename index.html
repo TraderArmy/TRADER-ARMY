@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Chart</title>
+<title>Trading Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,12 +12,52 @@ body{
     color:#fff;
     font-family:Arial;
 }
+.center{
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.box{
+    width:100%;
+    max-width:360px;
+    background:#1c1c1c;
+    padding:30px;
+    border-radius:10px;
+}
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:6px;
+}
+button{
+    width:100%;
+    padding:12px;
+    background:#2962ff;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+.switch{
+    margin-top:10px;
+    text-align:center;
+    color:#4fc3f7;
+    cursor:pointer;
+}
+.error{
+    color:#ff5252;
+    text-align:center;
+    min-height:20px;
+}
 header{
     height:50px;
     background:#1c1c1c;
     display:flex;
-    justify-content:space-between;
     align-items:center;
+    justify-content:space-between;
     padding:0 15px;
 }
 #tv{
@@ -34,58 +74,111 @@ footer{
     text-align:center;
     padding:0 10px;
 }
-button{
-    background:#2962ff;
-    border:none;
-    color:#fff;
-    padding:6px 12px;
-    border-radius:4px;
-    cursor:pointer;
-}
 </style>
 </head>
 
 <body>
 
-<script>
-if(!localStorage.getItem("loggedIn")){
-    location.href="login.html";
-}
-</script>
+<!-- LOGIN -->
+<div id="login" class="center">
+    <div class="box">
+        <h2 id="title">Giriş Yap</h2>
+        <div class="error" id="error"></div>
 
-<header>
-    <div>📊 Trading Platform</div>
-    <button onclick="logout()">Çıkış</button>
-</header>
+        <input id="email" placeholder="E-posta">
+        <input id="password" type="password" placeholder="Şifre">
 
-<div id="tv"></div>
+        <button onclick="submitForm()" id="btn">Giriş Yap</button>
+        <div class="switch" onclick="toggle()">Hesabın yok mu? Kayıt Ol</div>
+    </div>
+</div>
 
-<footer>
-    Yasal Uyarı: Bu sitede yer alan grafikler ve içerikler yatırım danışmanlığı değildir.
-    Finansal işlemler risk içerir, tüm sorumluluk kullanıcıya aittir.
-</footer>
+<!-- CHART -->
+<div id="app" style="display:none;">
+    <header>
+        <div>📊 Trading Platform</div>
+        <button onclick="logout()">Çıkış</button>
+    </header>
+
+    <div id="tv"></div>
+
+    <footer>
+        Yasal Uyarı: Bu sitede yer alan grafikler ve içerikler yatırım danışmanlığı değildir.
+        Finansal işlemler risk içerir, sorumluluk kullanıcıya aittir.
+    </footer>
+</div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-new TradingView.widget({
-    container_id:"tv",
-    width:"100%",
-    height:"100%",
-    symbol:"CAPITALCOM:US100",
-    interval:"5",
-    timezone:"Europe/Istanbul",
-    theme:"dark",
-    style:"1",
-    locale:"tr",
-    hide_side_toolbar:false,
-    allow_symbol_change:true,
-    withdateranges:true,
-    save_image:true
-});
+let loginMode = true;
+
+if(localStorage.getItem("loggedIn")){
+    showApp();
+}
+
+function toggle(){
+    loginMode = !loginMode;
+    title.innerText = loginMode ? "Giriş Yap" : "Kayıt Ol";
+    btn.innerText = loginMode ? "Giriş Yap" : "Kayıt Ol";
+    document.querySelector(".switch").innerText =
+        loginMode ? "Hesabın yok mu? Kayıt Ol" : "Hesabın var mı? Giriş Yap";
+    error.innerText="";
+}
+
+function submitForm(){
+    const emailVal = email.value;
+    const passVal = password.value;
+
+    if(!emailVal || !passVal){
+        error.innerText="Boş bırakma kanka";
+        return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || {};
+
+    if(loginMode){
+        if(users[emailVal] === passVal){
+            localStorage.setItem("loggedIn", emailVal);
+            showApp();
+        }else{
+            error.innerText="Hatalı giriş";
+        }
+    }else{
+        if(users[emailVal]){
+            error.innerText="Bu mail kayıtlı";
+        }else{
+            users[emailVal] = passVal;
+            localStorage.setItem("users", JSON.stringify(users));
+            error.innerText="Kayıt başarılı, giriş yap";
+            toggle();
+        }
+    }
+}
+
+function showApp(){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+
+    new TradingView.widget({
+        container_id:"tv",
+        width:"100%",
+        height:"100%",
+        symbol:"CAPITALCOM:US100",
+        interval:"5",
+        timezone:"Europe/Istanbul",
+        theme:"dark",
+        style:"1",
+        locale:"tr",
+        hide_side_toolbar:false,
+        allow_symbol_change:true,
+        withdateranges:true,
+        save_image:true
+    });
+}
 
 function logout(){
     localStorage.removeItem("loggedIn");
-    location.href="login.html";
+    location.reload();
 }
 </script>
 
