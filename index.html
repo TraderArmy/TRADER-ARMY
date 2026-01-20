@@ -26,10 +26,34 @@
         .brand-logo { height: 38px; width: auto; object-fit: contain; }
         .panel-header { padding: 8px 12px; text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/40 border-b border-[#1e222d] flex justify-between items-center; }
         
+        /* Ticker Tape Yüksekliği Ayarı */
+        .ticker-container { height: 42px; background: #131722; border-bottom: 1px solid #1e222d; overflow: hidden; }
+
         iframe { pointer-events: auto !important; }
     </style>
 </head>
 <body class="flex flex-col">
+
+    <div class="ticker-container shrink-0">
+        <div class="tradingview-widget-container">
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                { "proName": "FOREXCOM:SPX500", "title": "S&P 500" },
+                { "proName": "NASDAQ:IXIC", "title": "NASDAQ" },
+                { "proName": "FX_IDC:USDTRY", "title": "USD/TRY" },
+                { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
+                { "proName": "TVC:GOLD", "title": "ALTIN" }
+              ],
+              "showSymbolLogo": true,
+              "colorTheme": "dark",
+              "isTransparent": true,
+              "displayMode": "adaptive",
+              "locale": "tr"
+            }
+            </script>
+        </div>
+    </div>
 
     <header class="h-16 border-b border-[#1e222d] bg-[#131722] flex items-center justify-between px-4 shrink-0 z-50">
         <div class="flex items-center space-x-4">
@@ -48,7 +72,7 @@
         <div class="flex items-center space-x-4">
             <div id="live-clock" class="text-right">
                 <div class="text-white font-mono text-sm font-bold leading-none" id="clock-time">00:00:00</div>
-                <div class="text-[9px] text-green-500 font-bold tracking-widest uppercase" id="market-status">Piyasalar Açık</div>
+                <div class="text-[9px] text-green-500 font-bold tracking-widest uppercase" id="market-status">Canlı Yayın</div>
             </div>
             <div id="active-symbol-text" class="hidden md:block text-[11px] font-mono text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-widest">NASDAQ:IXIC</div>
         </div>
