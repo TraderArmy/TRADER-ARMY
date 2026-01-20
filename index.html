@@ -1,113 +1,168 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>TraderArmy Chart</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>TraderArmy Pro Charts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #0e0e0e;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      height: 100%;
-    }
-
-    header {
-      background: #111;
-      padding: 10px 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #222;
-    }
-
-    select {
-      background: #1c1c1c;
-      color: #fff;
-      border: 1px solid #333;
-      padding: 6px;
-      border-radius: 4px;
-    }
-
-    #chart {
-      height: calc(100vh - 120px);
-    }
-
-    footer {
-      background: #111;
-      color: #aaa;
-      font-size: 12px;
-      padding: 10px;
-      text-align: center;
-      border-top: 1px solid #222;
-    }
-  </style>
+<style>
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:#0e0e0e;
+    color:#fff;
+    font-family:Arial, sans-serif;
+}
+header{
+    background:#111;
+    padding:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid #222;
+}
+select,button{
+    background:#1c1c1c;
+    color:#fff;
+    border:1px solid #333;
+    padding:6px;
+    border-radius:4px;
+}
+button{
+    cursor:pointer;
+}
+#charts{
+    display:grid;
+    height:calc(100vh - 120px);
+}
+.chart-box{
+    border:1px solid #222;
+    display:flex;
+    flex-direction:column;
+}
+.chart-toolbar{
+    padding:5px;
+    display:flex;
+    gap:5px;
+    background:#111;
+    border-bottom:1px solid #222;
+}
+.chart{
+    flex:1;
+}
+footer{
+    background:#111;
+    color:#aaa;
+    font-size:12px;
+    padding:10px;
+    text-align:center;
+    border-top:1px solid #222;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <strong>TraderArmy</strong>
-
-  <!-- PARİTE SEÇİMİ -->
-  <select id="symbolSelect">
-    <option value="NASDAQ:US100">US100 (Nasdaq)</option>
-    <option value="OANDA:EURUSD">EURUSD</option>
-    <option value="BINANCE:BTCUSDT">BTCUSDT</option>
-    <option value="BINANCE:ETHUSDT">ETHUSDT</option>
-  </select>
+<strong>TraderArmy</strong>
+<button onclick="setLayout(1)">1 Grafik</button>
+<button onclick="setLayout(2)">2 Grafik</button>
+<button onclick="setLayout(4)">4 Grafik</button>
 </header>
 
-<div id="chart"></div>
+<div id="charts"></div>
 
 <footer>
-  ⚠️ Yasal Uyarı: Bu sitede yer alan bilgiler yatırım tavsiyesi değildir.
-  Finansal işlemler risk içerir, tüm sorumluluk kullanıcıya aittir.
+⚠️ Yasal Uyarı: Bu platformdaki içerikler yatırım tavsiyesi değildir.
+Tüm finansal işlemler risk içerir, sorumluluk kullanıcıya aittir.
 </footer>
 
-<!-- 1️⃣ ÖNCE TradingView KÜTÜPHANESİ -->
 <script src="https://s3.tradingview.com/tv.js"></script>
-
-<!-- 2️⃣ SONRA BİZİM KOD -->
 <script>
-  let widget;
+let layout = localStorage.getItem("layout") || 1;
 
-  const select = document.getElementById("symbolSelect");
-  const savedSymbol = localStorage.getItem("symbol") || "NASDAQ:US100";
-  select.value = savedSymbol;
+const symbols = [
+  "NASDAQ:US100",
+  "OANDA:EURUSD",
+  "BINANCE:BTCUSDT",
+  "BINANCE:ETHUSDT"
+];
 
-  function loadChart(symbol) {
-    if (widget) {
-      widget.remove();
-    }
+const intervals = ["1","5","15","60","240","D"];
 
-    widget = new TradingView.widget({
-      container_id: "chart",
-      autosize: true,
-      symbol: symbol,
-      interval: "5",
+function chartControls(index){
+  const sym = localStorage.getItem("symbol"+index) || symbols[index];
+  const intv = localStorage.getItem("interval"+index) || "5";
+
+  return `
+    <div class="chart-toolbar">
+      <select onchange="changeSymbol(${index}, this.value)">
+        ${symbols.map(s=>`<option value="${s}" ${s===sym?"selected":""}>${s}</option>`).join("")}
+      </select>
+      <select onchange="changeInterval(${index}, this.value)">
+        ${intervals.map(i=>`<option value="${i}" ${i===intv?"selected":""}>${i}</option>`).join("")}
+      </select>
+    </div>
+  `;
+}
+
+function render(){
+  const charts = document.getElementById("charts");
+  charts.innerHTML = "";
+
+  if(layout == 1){
+    charts.style.gridTemplateColumns = "1fr";
+    charts.style.gridTemplateRows = "1fr";
+  }
+  if(layout == 2){
+    charts.style.gridTemplateColumns = "1fr 1fr";
+    charts.style.gridTemplateRows = "1fr";
+  }
+  if(layout == 4){
+    charts.style.gridTemplateColumns = "1fr 1fr";
+    charts.style.gridTemplateRows = "1fr 1fr";
+  }
+
+  for(let i=0;i<layout;i++){
+    const box = document.createElement("div");
+    box.className = "chart-box";
+    box.innerHTML = chartControls(i) + `<div id="chart${i}" class="chart"></div>`;
+    charts.appendChild(box);
+
+    new TradingView.widget({
+      container_id: "chart"+i,
+      autosize:true,
+      symbol: localStorage.getItem("symbol"+i) || symbols[i],
+      interval: localStorage.getItem("interval"+i) || "5",
       timezone: "Europe/Istanbul",
       theme: "dark",
       style: "1",
       locale: "tr",
-      hide_side_toolbar: false,
-      allow_symbol_change: true,
-      withdateranges: true,
-      save_image: true
+      hide_side_toolbar:false,
+      withdateranges:true
     });
   }
+}
 
-  // ilk açılış
-  loadChart(savedSymbol);
+function setLayout(n){
+  layout = n;
+  localStorage.setItem("layout", n);
+  render();
+}
 
-  // parite değişince
-  select.addEventListener("change", function () {
-    localStorage.setItem("symbol", this.value);
-    loadChart(this.value);
-  });
+function changeSymbol(i,val){
+  localStorage.setItem("symbol"+i, val);
+  render();
+}
+
+function changeInterval(i,val){
+  localStorage.setItem("interval"+i, val);
+  render();
+}
+
+render();
 </script>
 
 </body>
