@@ -2,91 +2,89 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRADE ARMY V1 | AUTO-SYNC PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE ARMY V1 | PRO TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        html, body { background: #08090d; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; color: #d1d4dc; font-family: sans-serif; }
-        #chart-grid { display: grid; height: 100%; width: 100%; gap: 1px; background: #1e222d; }
-        @media (min-width: 768px) { .grid-1 { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr 1fr; } .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; } }
-        @media (max-width: 767px) { #chart-grid { grid-template-columns: 1fr !important; grid-template-rows: repeat(auto-fill, minmax(300px, 1fr)); overflow-y: auto; } .side-panel { position: fixed; right: 0; top: 0; height: 100%; width: 85% !important; z-index: 1000; } }
-        .active-btn { background: #2962ff !important; color: white !important; }
-        .side-panel { width: 320px; background: #131722; border-left: 1px solid #2a2e39; transition: 0.3s; display: flex; flex-direction: column; }
-        .closed { transform: translateX(100%); width: 0; overflow: hidden; border-left: none; }
-        .left-btn { width: 100%; padding: 12px 0; font-size: 10px; font-weight: 900; color: #5d606b; border-bottom: 1px solid #1e222d; transition: 0.2s; text-align: center; cursor: pointer; }
-        .left-btn:hover { background: #2962ff; color: white; }
-        .footer-fixed { background: #0c0d10; border-top: 1px solid #1e222d; padding: 6px 15px; font-size: 10px; color: #5d606b; z-index: 50; }
+        body { background: #08090d; color: #d1d4dc; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        .header { height: 50px; background: #131722; border-bottom: 1px solid #2a2e39; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; shrink-0; }
+        .main-container { flex: 1; display: flex; overflow: hidden; }
+        .side-bar { width: 60px; background: #0c0d10; border-right: 1px solid #1e222d; display: flex; flex-direction: column; shrink-0; }
+        .side-btn { padding: 12px 0; text-align: center; font-size: 10px; font-weight: 900; border-bottom: 1px solid #1e222d; cursor: pointer; transition: 0.2s; }
+        .side-btn:hover { background: #2962ff; color: white; }
+        .chart-area { flex: 1; background: #000; position: relative; }
+        /* FOOSTER - YASAL UYARI STİLİ */
+        .footer-fixed { height: 35px; background: #0c0d10; border-top: 1px solid #2a2e39; display: flex; align-items: center; justify-content: center; px-4; shrink-0; z-index: 100; }
+        .footer-text { font-size: 10px; color: #5d606b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .warning-tag { color: #facc15; font-weight: bold; margin-right: 8px; }
+        #alarm-panel { width: 280px; background: #131722; border-left: 1px solid #2a2e39; display: none; padding: 15px; overflow-y: auto; }
     </style>
 </head>
-<body class="flex flex-col" onclick="initAudio()">
+<body onclick="initAudio()">
 
-    <header class="px-4 py-2 bg-[#131722] border-b border-[#2a2e39] shrink-0">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <h1 class="text-lg font-black italic text-white uppercase tracking-tighter">Trade Army <span class="text-blue-500">V1</span></h1>
-                <button onclick="window.location.href='https://www.tradingview.com/accounts/signin/'" class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded font-bold uppercase hover:bg-white hover:text-black transition">
-                    HESABI DEĞİŞTİR / GİRİŞ YAP
-                </button>
-                <div id="sync-status" class="text-[9px] text-green-500 font-bold uppercase animate-pulse">● SENKRONİZE MOD AKTİF</div>
+    <header class="header">
+        <div class="flex items-center space-x-3">
+            <h1 class="text-white font-black italic tracking-tighter text-lg">TRADE ARMY <span class="text-blue-500">V1</span></h1>
+            <button onclick="window.open('https://www.tradingview.com/accounts/signin/', '_blank')" class="bg-[#2962ff] text-white text-[9px] px-3 py-1.5 rounded font-bold uppercase hover:shadow-[0_0_10px_#2962ff] transition">
+                HESABA GİRİŞ YAP
+            </button>
+            <button onclick="location.reload()" class="bg-gray-800 text-gray-300 text-[9px] px-3 py-1.5 rounded font-bold border border-white/10">
+                SİSTEMİ YENİLE
+            </button>
+        </div>
+        <div class="flex items-center space-x-3">
+            <div class="bg-black/50 p-1 rounded border border-white/5 flex space-x-1">
+                <button onclick="setGrid(1)" class="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white">1</button>
+                <button onclick="setGrid(2)" class="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white">2</button>
+                <button onclick="setGrid(4)" class="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white">4</button>
             </div>
-            
-            <div class="flex items-center space-x-3">
-                <div class="flex space-x-1 bg-black/40 p-1 rounded border border-white/10 text-white">
-                    <button onclick="setLayout(1, this)" class="px-3 py-1 rounded text-[10px] font-bold active-btn">1</button>
-                    <button onclick="setLayout(2, this)" class="px-3 py-1 rounded text-[10px] font-bold">2</button>
-                    <button onclick="setLayout(4, this)" class="px-3 py-1 rounded text-[10px] font-bold">4</button>
-                </div>
-                <button onclick="toggleSide()" class="bg-orange-600 text-white px-3 py-1.5 rounded text-[10px] font-black uppercase">ALARM ☰</button>
-            </div>
+            <button onclick="toggleAlarm()" class="bg-orange-600 text-white text-[9px] font-bold px-3 py-1.5 rounded uppercase">ALARM ☰</button>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
-        <aside class="w-14 md:w-16 bg-[#0c0d10] border-r border-[#1e222d] flex flex-col shrink-0">
-            <button class="left-btn" onclick="setSym('CAPITALCOM:US100')">NAS<br>CFD</button>
-            <button class="left-btn" onclick="setSym('TVC:GOLD')">XAU<br>USD</button>
-            <button class="left-btn" onclick="setSym('TVC:SILVER')">XAG<br>USD</button>
-            <button class="left-btn" onclick="setSym('FX:EURUSD')">EUR<br>USD</button>
-            <button class="left-btn" onclick="setSym('BINANCE:BTCUSDT')">BTC<br>USDT</button>
+    <div class="main-container">
+        <aside class="side-bar">
+            <div class="side-btn text-blue-400" onclick="changeSym('CAPITALCOM:US100')">NAS<br>CFD</div>
+            <div class="side-btn text-yellow-500" onclick="changeSym('TVC:GOLD')">XAU<br>USD</div>
+            <div class="side-btn text-gray-400" onclick="changeSym('TVC:SILVER')">XAG<br>USD</div>
+            <div class="side-btn text-green-500" onclick="changeSym('FX:EURUSD')">EUR<br>USD</div>
+            <div class="side-btn text-orange-500" onclick="changeSym('BINANCE:BTCUSDT')">BTC<br>USDT</div>
         </aside>
 
-        <main class="flex-1 bg-black overflow-hidden relative">
-            <div id="chart-grid" class="grid-1 h-full w-full">
-                <div id="tv_1" class="w-full h-full"></div>
-                <div id="tv_2" class="w-full h-full hidden"></div>
-                <div id="tv_3" class="w-full h-full hidden"></div>
-                <div id="tv_4" class="w-full h-full hidden"></div>
-            </div>
+        <main id="grid-container" class="chart-area grid grid-cols-1 h-full w-full">
+            <div id="tv_chart_1" class="w-full h-full border-r border-b border-white/5"></div>
+            <div id="tv_chart_2" class="w-full h-full hidden border-b border-white/5"></div>
+            <div id="tv_chart_3" class="w-full h-full hidden border-r border-white/5"></div>
+            <div id="tv_chart_4" class="w-full h-full hidden"></div>
         </main>
 
-        <aside id="side" class="side-panel closed shadow-2xl">
-            <div class="p-4 flex-1 overflow-y-auto space-y-6">
-                <section class="bg-black/40 p-3 rounded border border-white/5 text-center">
-                    <h3 class="text-[10px] font-bold text-orange-500 uppercase mb-3">SINIRSIZ ALARM</h3>
-                    <input type="text" id="aSym" placeholder="US100, BTC..." class="w-full bg-black border border-gray-800 rounded p-2 text-xs mb-2 text-blue-400 font-bold uppercase outline-none">
-                    <input type="number" id="aPrice" step="any" placeholder="Fiyat" class="w-full bg-black border border-gray-800 rounded p-2 text-xs mb-2 text-yellow-500 font-bold outline-none">
-                    <button onclick="addAlarm()" class="w-full bg-orange-600 text-white py-2 rounded text-[10px] font-black uppercase">LİSTEYE EKLE</button>
-                    <div id="alarmList" class="mt-4 space-y-1"></div>
-                </section>
-                <div id="tech" class="h-64 rounded overflow-hidden"></div>
-            </div>
+        <aside id="alarm-panel">
+            <h2 class="text-orange-500 font-bold text-xs mb-4 uppercase text-center tracking-widest">Sınırsız Alarm</h2>
+            <input type="text" id="asym" placeholder="Sembol" class="w-full bg-black border border-gray-800 p-2 text-xs mb-2 rounded text-blue-400 font-bold outline-none">
+            <input type="number" id="aprice" placeholder="Fiyat" class="w-full bg-black border border-gray-800 p-2 text-xs mb-4 rounded text-yellow-500 font-bold outline-none">
+            <button onclick="addAlarm()" class="w-full bg-orange-600 text-white font-bold py-2 rounded text-xs mb-4 uppercase">Alarm Ekle</button>
+            <div id="list" class="space-y-2"></div>
         </aside>
     </div>
 
-    <footer class="footer-fixed text-center">
-        <span class="text-yellow-600 font-bold">YASAL UYARI:</span> Bu terminaldeki veriler yatırım tavsiyesi değildir. Grafik üzerindeki "Bulut" simgesine basarak kayıtlı analizlerinizi tek tıkla yükleyebilirsiniz.
+    <footer class="footer-fixed">
+        <div class="footer-text">
+            <span class="warning-tag">YASAL UYARI:</span> 
+            Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danışmanlığı kapsamında değildir. Bu bilgiler mali durumunuz ile risk ve getiri tercihlerinize uygun olmayabilir.
+            <span class="ml-4 opacity-50">| Trade Army V1 Terminal &copy; 2026</span>
+        </div>
     </footer>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        let config = { layout: 1, symbol: 'CAPITALCOM:US100' };
-        let alarms = JSON.parse(localStorage.getItem('army_alarms_v1')) || [];
-        let audioOk = false;
+        let symbol = 'CAPITALCOM:US100';
+        let layout = 1;
+        let alarms = JSON.parse(localStorage.getItem('army_alarms_v2')) || [];
+        let audio = false;
 
-        function initAudio() { audioOk = true; }
-        function speak(t) { if(audioOk) { let m = new SpeechSynthesisUtterance(t); m.lang='tr-TR'; window.speechSynthesis.speak(m); } }
+        function initAudio() { audio = true; }
 
-        function initTV(id, sym) {
+        function createWidget(id, sym) {
             new TradingView.widget({
                 "autosize": true,
                 "symbol": sym,
@@ -95,88 +93,71 @@
                 "style": "1",
                 "locale": "tr",
                 "toolbar_bg": "#131722",
-                "enable_publishing": false,
-                "withdateranges": true,
+                "enable_publishing": true,
                 "hide_side_toolbar": false,
                 "allow_symbol_change": true,
                 "container_id": id,
+                "withdateranges": true,
+                "show_popup_button": true,
                 "remember_last_used_chart": true,
                 "charts_storage_url": "https://saveload.tradingview.com",
                 "charts_storage_api_version": "1.1",
                 "client_id": "tradingview.com",
                 "user_id": "public_user_id",
-                "enabled_features": [
-                    "header_widget", 
-                    "header_saveload", 
-                    "header_indicators",
-                    "header_resolutions", 
-                    "header_settings",
-                    "header_compare",
-                    "header_screenshot",
-                    "auto_save_and_load_chart"
-                ]
+                "enabled_features": ["header_saveload", "header_resolutions", "header_settings", "header_indicators", "header_undo_redo", "auto_save_and_load_chart"]
             });
-            updateSide(sym);
+        }
+
+        function setGrid(n) {
+            layout = n;
+            const container = document.getElementById('grid-container');
+            container.className = `chart-area grid h-full w-full ${n===1 ? 'grid-cols-1' : n===2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`;
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById('tv_chart_'+i);
+                if(i <= n) { el.classList.remove('hidden'); createWidget('tv_chart_'+i, symbol); }
+                else { el.classList.add('hidden'); el.innerHTML = ''; }
+            }
+        }
+
+        function changeSym(s) {
+            symbol = s;
+            document.getElementById('asym').value = s;
+            for(let i=1; i<=layout; i++) {
+                if(!document.getElementById('tv_chart_'+i).classList.contains('hidden')) createWidget('tv_chart_'+i, s);
+            }
+        }
+
+        function toggleAlarm() { 
+            const p = document.getElementById('alarm-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
 
         function addAlarm() {
-            let s = document.getElementById('aSym').value.toUpperCase() || config.symbol;
-            let p = parseFloat(document.getElementById('aPrice').value);
+            let s = document.getElementById('asym').value.toUpperCase() || symbol;
+            let p = document.getElementById('aprice').value;
             if(!p) return;
-            alarms.push({ id: Date.now(), sym: s, price: p });
-            localStorage.setItem('army_alarms_v1', JSON.stringify(alarms));
+            alarms.push({id: Date.now(), s, p});
+            localStorage.setItem('army_alarms_v2', JSON.stringify(alarms));
             renderAlarms();
-            speak(s + " alarmı eklendi.");
+            if(audio) { let msg = new SpeechSynthesisUtterance(s + " alarmı kuruldu"); msg.lang='tr-TR'; window.speechSynthesis.speak(msg); }
         }
 
         function renderAlarms() {
-            document.getElementById('alarmList').innerHTML = alarms.map(a => `
-                <div class="p-2 bg-white/5 flex justify-between items-center rounded text-[10px] text-white">
-                    <span>${a.sym} @ ${a.price}</span>
-                    <button onclick="removeAlarm(${a.id})" class="text-red-500 font-bold px-1">SİL</button>
+            document.getElementById('list').innerHTML = alarms.map(a => `
+                <div class="flex justify-between items-center bg-white/5 p-2 rounded text-[10px]">
+                    <span class="text-white">${a.s} @ <span class="text-orange-400 font-bold">${a.p}</span></span>
+                    <button onclick="removeAlarm(${a.id})" class="text-red-500 font-bold px-2">SİL</button>
                 </div>
             `).join('');
         }
 
         function removeAlarm(id) {
             alarms = alarms.filter(a => a.id !== id);
-            localStorage.setItem('army_alarms_v1', JSON.stringify(alarms));
+            localStorage.setItem('army_alarms_v2', JSON.stringify(alarms));
             renderAlarms();
         }
 
-        function setLayout(n, btn) {
-            config.layout = n;
-            document.getElementById('chart-grid').className = `grid-${n}`;
-            document.querySelectorAll('header button').forEach(b => b.classList.remove('active-btn'));
-            if(btn) btn.classList.add('active-btn');
-            for (let i = 1; i <= 4; i++) {
-                const el = document.getElementById(`tv_${i}`);
-                if (i <= n) { el.classList.remove('hidden'); initTV(`tv_${i}`, config.symbol); }
-                else { el.classList.add('hidden'); el.innerHTML = ""; }
-            }
-        }
-
-        function setSym(s) {
-            config.symbol = s;
-            document.getElementById('aSym').value = s;
-            for (let i = 1; i <= config.layout; i++) {
-                const el = document.getElementById(`tv_${i}`);
-                if (!el.classList.contains('hidden')) initTV(`tv_${i}`, s);
-            }
-        }
-
-        function updateSide(sym) {
-            const container = document.getElementById('tech');
-            container.innerHTML = "";
-            const sc = document.createElement('script'); sc.type = 'text/javascript'; sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js'; sc.async = true;
-            sc.innerHTML = JSON.stringify({ "interval": "1h", "width": "100%", "isTransparent": true, "height": "100%", "symbol": sym, "showIntervalTabs": true, "locale": "tr", "colorTheme": "dark" });
-            container.appendChild(sc);
-        }
-
-        function toggleSide() { document.getElementById('side').classList.toggle('closed'); }
-        
-        // BAŞLANGIÇTA OTOMATİK DÜZEN
-        window.onload = () => { setLayout(1); renderAlarms(); };
+        window.onload = () => { setGrid(1); renderAlarms(); };
     </script>
 </body>
 </html>
