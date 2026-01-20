@@ -30,9 +30,7 @@ select,button{
     padding:6px;
     border-radius:4px;
 }
-button{
-    cursor:pointer;
-}
+button{ cursor:pointer; }
 #charts{
     display:grid;
     height:calc(100vh - 120px);
@@ -49,9 +47,7 @@ button{
     background:#111;
     border-bottom:1px solid #222;
 }
-.chart{
-    flex:1;
-}
+.chart{ flex:1; }
 footer{
     background:#111;
     color:#aaa;
@@ -60,12 +56,6 @@ footer{
     text-align:center;
     border-top:1px solid #222;
 }
-
-/* EK ALARM STİLLERİ - SENİN KODUNU ETKİLEMEZ */
-.alarm-fixed { position: fixed; bottom: 60px; right: 20px; z-index: 999; }
-.alarm-btn { background: #2962ff !important; border: none !important; font-weight: bold; padding: 10px 15px !important; border-radius: 5px; }
-.alarm-box { display:none; background: #111; border: 1px solid #333; padding: 10px; width: 220px; margin-bottom: 5px; border-radius: 5px; box-shadow: 0 0 10px #000; }
-.al-list { max-height: 100px; overflow-y: auto; font-size: 11px; margin-top: 5px; }
 </style>
 </head>
 
@@ -80,16 +70,6 @@ footer{
 
 <div id="charts"></div>
 
-<div class="alarm-fixed">
-    <div id="alBox" class="alarm-box">
-        <input type="text" id="alSym" placeholder="Sembol" style="width:90%; background:#000; color:#fff; border:1px solid #333; margin-bottom:5px; padding:3px;">
-        <input type="number" id="alPrice" placeholder="Fiyat" style="width:90%; background:#000; color:#fff; border:1px solid #333; margin-bottom:5px; padding:3px;">
-        <button onclick="addAl()" style="width:97%; font-size:11px;">EKLE</button>
-        <div id="alList" class="al-list"></div>
-    </div>
-    <button class="alarm-btn" onclick="document.getElementById('alBox').style.display = document.getElementById('alBox').style.display === 'block' ? 'none' : 'block'">🔔 ALARM</button>
-</div>
-
 <footer>
 ⚠️ Yasal Uyarı: Bu platformdaki içerikler yatırım tavsiyesi değildir.
 Tüm finansal işlemler risk içerir, sorumluluk kullanıcıya aittir.
@@ -97,7 +77,7 @@ Tüm finansal işlemler risk içerir, sorumluluk kullanıcıya aittir.
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-// --- SENİN ORİJİNAL KODUN (DOKUNULMADI) ---
+// ===== SENİN ORİJİNAL KODUN (AYNEN) =====
 let layout = localStorage.getItem("layout") || 1;
 
 const symbols = [
@@ -181,18 +161,36 @@ function changeInterval(i,val){
 
 render();
 
-// --- EK ALARM SİSTEMİ (SENİN KODUNU ETKİLEMEZ) ---
-let myAls = JSON.parse(localStorage.getItem("ta_als")) || [];
-function addAl() {
-    let s = document.getElementById('alSym').value.toUpperCase();
-    let p = document.getElementById('alPrice').value;
-    if(s && p) { myAls.push({s, p}); localStorage.setItem("ta_als", JSON.stringify(myAls)); drawAls(); }
-}
-function delAl(i) { myAls.splice(i, 1); localStorage.setItem("ta_als", JSON.stringify(myAls)); drawAls(); }
-function drawAls() {
-    document.getElementById('alList').innerHTML = myAls.map((a, i) => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #222; padding:3px;">${a.s}: ${a.p} <span onclick="delAl(${i})" style="color:red; cursor:pointer;">X</span></div>`).join('');
-}
-drawAls();
+// ===== ÜSTÜNE EK: TÜM PARİTELER =====
+(function addAllSymbols(){
+
+  const extraSymbols = [
+
+    // ENDEKSLER
+    "NASDAQ:NDX","SP:SPX","DJ:DJI","CME_MINI:NQ1!","CME_MINI:ES1!",
+    "XETR:DAX","EURONEXT:PX1","LSE:UKX","BIST:XU100",
+
+    // FOREX
+    "OANDA:GBPUSD","OANDA:USDJPY","OANDA:USDCHF","OANDA:AUDUSD",
+    "OANDA:USDCAD","OANDA:NZDUSD","OANDA:EURJPY","OANDA:GBPJPY",
+    "OANDA:EURGBP","OANDA:CHFJPY","OANDA:EURAUD","OANDA:GBPAUD",
+
+    // EMTİA
+    "OANDA:XAUUSD","OANDA:XAGUSD","TVC:USOIL","TVC:UKOIL","TVC:NATGAS",
+
+    // KRİPTO (BINANCE)
+    "BINANCE:BNBUSDT","BINANCE:XRPUSDT","BINANCE:SOLUSDT","BINANCE:ADAUSDT",
+    "BINANCE:DOGEUSDT","BINANCE:AVAXUSDT","BINANCE:DOTUSDT","BINANCE:MATICUSDT",
+    "BINANCE:LINKUSDT","BINANCE:TRXUSDT","BINANCE:ATOMUSDT","BINANCE:LTCUSDT",
+    "BINANCE:UNIUSDT","BINANCE:NEARUSDT","BINANCE:ARBUSDT","BINANCE:APTUSDT",
+    "BINANCE:ICPUSDT","BINANCE:FTMUSDT","BINANCE:HBARUSDT","BINANCE:INJUSDT"
+  ];
+
+  extraSymbols.forEach(s=>{
+    if(!symbols.includes(s)) symbols.push(s);
+  });
+
+})();
 </script>
 
 </body>
