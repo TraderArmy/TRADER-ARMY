@@ -4,70 +4,41 @@
 <meta charset="UTF-8">
 <title>TraderArmy Pro Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
-body{
-    margin:0;
-    background:#0d0d0d;
-    color:#fff;
-    font-family:Arial, sans-serif;
-}
+body{ margin:0;background:#0d0d0d;color:#fff;font-family:Arial, sans-serif; }
 
 /* HABER BANDI */
 #newsTicker{
-    background:#111;
-    border-bottom:1px solid #222;
-    overflow:hidden;
-    white-space:nowrap;
-    height:38px;
-    display:flex;
-    align-items:center;
+    background:#111;border-bottom:1px solid #222;overflow:hidden;
+    white-space:nowrap;height:38px;display:flex;align-items:center;
 }
 #newsTicker span{
-    background:#b71c1c;
-    color:#fff;
-    padding:6px 12px;
-    font-weight:bold;
-    font-size:13px;
-    margin-right:10px;
+    background:#b71c1c;color:#fff;padding:6px 12px;
+    font-weight:bold;font-size:13px;margin-right:10px;
 }
 #tickerContent{
-    display:inline-block;
-    animation: tickerMove 30s linear infinite;
-    font-size:13px;
-    color:#ddd;
+    display:inline-block;color:#ddd;font-size:13px;
+    animation: tickerMove 25s linear infinite;
 }
 @keyframes tickerMove {
-    0%   { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+    0%{ transform:translateX(100%); }
+    100%{ transform:translateX(-100%); }
 }
 
 /* HEADER */
 header{
-    background:#111;
-    padding:10px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-    border-bottom:1px solid #222;
+    background:#111;padding:10px;display:flex;gap:10px;flex-wrap:wrap;
+    border-bottom:1px solid #222;align-items:center;
+}
+button,select,input{
+    background:#1a1a1a;color:#fff;border:1px solid #333;
+    padding:6px 10px;border-radius:4px;
 }
 
-button, select, input{
-    background:#1a1a1a;
-    color:#fff;
-    border:1px solid #333;
-    padding:6px 10px;
-    border-radius:4px;
-}
-
-/* TAKVİM BLOĞU */
-#calendar-block{
-    background:#0f0f0f;
-    border-bottom:1px solid #222;
-}
+/* TAKVİM */
+#calendar-block{background:#0f0f0f;border-bottom:1px solid #222;}
 
 /* GRAFİKLER */
 #charts{
@@ -75,45 +46,26 @@ button, select, input{
     height:calc(100vh - 350px);
 }
 .chart-box{
-    display:flex;
-    flex-direction:column;
-    border:1px solid #222;
+    border:1px solid #222;display:flex;flex-direction:column;
 }
 .toolbar{
-    background:#111;
-    padding:6px;
-    border-bottom:1px solid #222;
-    display:flex;
-    gap:6px;
+    background:#111;padding:6px;border-bottom:1px solid #222;
+    display:flex;gap:8px;
 }
-.chart{
-    flex:1;
-}
+.chart{flex:1;}
 
-/* ALARM */
 .alarm-box{
-    background:#111;
-    padding:6px;
-    border-top:1px solid #222;
-    display:flex;
-    gap:6px;
-    align-items:center;
+    background:#111;padding:6px;border-top:1px solid #222;
+    display:flex;gap:6px;align-items:center;
 }
 .alarm-list{
-    font-size:12px;
-    padding:6px;
-    border-top:1px solid #222;
-    color:#ccc;
+    font-size:12px;padding:6px;border-top:1px solid #222;color:#ccc;
 }
 
 /* FOOTER */
 footer{
-    background:#111;
-    color:#aaa;
-    padding:10px;
-    text-align:center;
-    border-top:1px solid #222;
-    font-size:12px;
+    background:#111;color:#aaa;padding:10px;text-align:center;
+    border-top:1px solid #222;font-size:12px;
 }
 </style>
 </head>
@@ -135,14 +87,11 @@ footer{
     <button onclick="setLayout(4)">4 Grafik</button>
 
     <select id="pairSelect">
-        <!-- Forex -->
         <option value="FX:EURUSD">EURUSD</option>
         <option value="FX:XAUUSD">XAUUSD</option>
         <option value="FX:GBPUSD">GBPUSD</option>
         <option value="FX:USDJPY">USDJPY</option>
         <option value="FX:USDTRY">USDTRY</option>
-
-        <!-- Kripto -->
         <option value="BINANCE:BTCUSDT">BTCUSDT</option>
         <option value="BINANCE:ETHUSDT">ETHUSDT</option>
         <option value="BINANCE:XRPUSDT">XRPUSDT</option>
@@ -158,9 +107,12 @@ footer{
     </select>
 
     <button onclick="applyAll()">Uygula</button>
+
+    <!-- TAKVİM AÇ/KAPAT -->
+    <button onclick="toggleCalendar()">Takvimi Aç / Kapat</button>
 </header>
 
-<!-- EKONOMİK TAKVİM -->
+<!-- TAKVİM BLOĞU -->
 <div id="calendar-block">
     <div class="tradingview-widget-container" style="height:260px;">
         <div class="tradingview-widget-container__widget"></div>
@@ -182,98 +134,88 @@ footer{
 <div id="charts"></div>
 
 <footer>
-⚠️ Bu platform yatırım tavsiyesi değildir. Finansal piyasalar yüksek risk içerir. Yapılan tüm işlemler kullanıcının kendi sorumluluğundadır.
+⚠️ Bu platform yatırım tavsiyesi değildir. Finansal piyasalar risk içerir.
+Tüm işlemler kullanıcının kendi sorumluluğundadır.
 </footer>
 
 <script>
-let layout = 1;
-let alarms = JSON.parse(localStorage.getItem("ta_alarms")) || [];
-let chartSymbols = [];
-
 /* -------------------- NEWS TICKER -------------------- */
-const tickerTexts = [
-    "ABD TÜFE (CPI) – Yüksek Etki",
-    "FED Faiz Kararı – Yüksek Etki",
-    "ABD Tarım Dışı (NFP) – Yüksek Etki",
-    "ECB Faiz Kararı – Yüksek Etki",
-    "BOE Faiz Kararı – Orta/Yüksek Etki",
-    "ABD İşsizlik Oranı – Yüksek Etki",
-    "ABD PMI – Orta Etki",
-    "ABD Perakende Satışlar – Orta Etki"
+const tickerTexts=[
+"ABD TÜFE (CPI) – Yüksek Etki",
+"FED Faiz Kararı – Yüksek Etki",
+"Tarım Dışı İstihdam (NFP) – Yüksek Etki",
+"ECB Faiz Kararı – Yüksek Etki",
+"BOE Faiz Kararı – Orta/Yüksek Etki",
+"ABD İşsizlik Oranı – Yüksek Etki",
+"ABD PMI – Orta Etki",
+"ABD Perakende Satışlar – Orta Etki"
 ];
-let tIndex = 0;
+let tIndex=0;
 function rotateTicker(){
-    document.getElementById("tickerContent").innerText = tickerTexts[tIndex];
-    tIndex = (tIndex+1) % tickerTexts.length;
+    document.getElementById("tickerContent").innerText=tickerTexts[tIndex];
+    tIndex=(tIndex+1)%tickerTexts.length;
 }
 rotateTicker();
-setInterval(rotateTicker, 6000);
+setInterval(rotateTicker,6000);
 
-/* -------------------- MULTI CHART -------------------- */
-function setLayout(n){
-    layout = n;
-    render();
+/* -------------------- LAYOUT -------------------- */
+let layout=1;
+let alarms=JSON.parse(localStorage.getItem("ta_alarms"))||[];
+let chartSymbols=[];
+
+function setLayout(n){ layout=n; render(); }
+
+function toggleCalendar(){
+    const c=document.getElementById("calendar-block");
+    c.style.display = (c.style.display==="none") ? "block" : "none";
 }
 
+/* -------------------- GRAFİKLEME -------------------- */
 function render(){
-    const area = document.getElementById("charts");
-    area.innerHTML = "";
+    const area=document.getElementById("charts");
+    area.innerHTML="";
 
-    if(layout===1){
-        area.style.gridTemplateColumns="1fr";
-        area.style.gridTemplateRows="1fr";
-    }
-    if(layout===2){
-        area.style.gridTemplateColumns="1fr 1fr";
-        area.style.gridTemplateRows="1fr";
-    }
-    if(layout===4){
-        area.style.gridTemplateColumns="1fr 1fr";
-        area.style.gridTemplateRows="1fr 1fr";
-    }
+    if(layout===1){ area.style.gridTemplateColumns="1fr"; area.style.gridTemplateRows="1fr"; }
+    if(layout===2){ area.style.gridTemplateColumns="1fr 1fr"; area.style.gridTemplateRows="1fr"; }
+    if(layout===4){ area.style.gridTemplateColumns="1fr 1fr"; area.style.gridTemplateRows="1fr 1fr"; }
 
-    chartSymbols = [];
-    for(let i=0;i<layout;i++){
-        createChartBox(i);
-    }
+    chartSymbols=[];
+
+    for(let i=0;i<layout;i++){ createChartBox(i); }
 }
 
 function createChartBox(i){
-    const area = document.getElementById("charts");
-    const box = document.createElement("div");
+    const area=document.getElementById("charts");
+
+    const box=document.createElement("div");
     box.className="chart-box";
 
-    const toolbar = document.createElement("div");
+    const toolbar=document.createElement("div");
     toolbar.className="toolbar";
-    toolbar.innerHTML = `
-        <select onchange="changeSymbol(${i}, this.value)">
-            ${document.getElementById("pairSelect").innerHTML}
-        </select>
-        <select onchange="changeTf(${i}, this.value)">
-            ${document.getElementById("tfSelect").innerHTML}
-        </select>
+    toolbar.innerHTML=`
+        <select onchange="changeSymbol(${i},this.value)">${pairSelect.innerHTML}</select>
+        <select onchange="changeTf(${i},this.value)">${tfSelect.innerHTML}</select>
     `;
 
-    const chart = document.createElement("div");
+    const chart=document.createElement("div");
     chart.className="chart";
-    chart.id = "tv"+i;
+    chart.id="tv"+i;
 
-    /* Alarm kutusu */
-    const alBox = document.createElement("div");
-    alBox.className="alarm-box";
-    alBox.innerHTML = `
+    const alarmBox=document.createElement("div");
+    alarmBox.className="alarm-box";
+    alarmBox.innerHTML=`
         <input id="alPrice${i}" placeholder="Alarm fiyatı" style="width:90px;">
         <button onclick="addAlarm(${i})">Alarm +</button>
     `;
 
-    const list = document.createElement("div");
-    list.className="alarm-list";
-    list.id="alarmList"+i;
+    const alarmList=document.createElement("div");
+    alarmList.className="alarm-list";
+    alarmList.id="alarmList"+i;
 
     box.appendChild(toolbar);
     box.appendChild(chart);
-    box.appendChild(alBox);
-    box.appendChild(list);
+    box.appendChild(alarmBox);
+    box.appendChild(alarmList);
     area.appendChild(box);
 
     createTV(i);
@@ -281,90 +223,78 @@ function createChartBox(i){
 }
 
 function createTV(i){
-    const symbol = document.getElementById("pairSelect").value;
-    const interval = document.getElementById("tfSelect").value;
-    chartSymbols[i] = symbol;
+    const symbol=pairSelect.value;
+    const interval=tfSelect.value;
+    chartSymbols[i]=symbol;
 
     new TradingView.widget({
-        container_id: "tv"+i,
-        autosize: true,
-        symbol: symbol,
-        interval: interval,
-        timezone: "Europe/Istanbul",
-        theme: "dark",
-        style: "1",
-        locale: "tr",
+        container_id:"tv"+i,
+        autosize:true,
+        symbol:symbol,
+        interval:interval,
+        timezone:"Europe/Istanbul",
+        theme:"dark",
+        style:"1",
+        locale:"tr",
         hide_side_toolbar:false,
         withdateranges:true
     });
 }
 
-function changeSymbol(i,val){
-    chartSymbols[i] = val;
-    render();
-}
-
-function changeTf(i,val){
-    render();
-}
-
+function changeSymbol(i,val){ chartSymbols[i]=val; render(); }
+function changeTf(i,val){ render(); }
 function applyAll(){ render(); }
 
-/* -------------------- ALARM SİSTEMİ -------------------- */
-
+/* -------------------- ALARM -------------------- */
 function addAlarm(i){
-    const sym = chartSymbols[i];
-    const price = parseFloat(document.getElementById("alPrice"+i).value);
+    const sym=chartSymbols[i];
+    const price=parseFloat(document.getElementById("alPrice"+i).value);
     if(!price){ alert("Fiyat gir"); return; }
 
-    alarms.push({sym, price});
-    localStorage.setItem("ta_alarms", JSON.stringify(alarms));
+    alarms.push({sym,price});
+    localStorage.setItem("ta_alarms",JSON.stringify(alarms));
+
     updateAlarmList(i);
 }
 
 function updateAlarmList(i){
-    const list = alarms.filter(a=>a.sym === chartSymbols[i]);
+    const list=alarms.filter(a=>a.sym===chartSymbols[i]);
     document.getElementById("alarmList"+i).innerHTML =
         list.map(a=>`<div>${a.sym} → ${a.price}</div>`).join("");
 }
 
-/* Fiyat kontrol döngüsü */
 async function checkAlarms(){
     for(const a of alarms){
 
         /* KRİPTO */
         if(a.sym.startsWith("BINANCE:")){
-            const s = a.sym.replace("BINANCE:","");
-            const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
-            const d = await r.json();
-            if(parseFloat(d.price) >= a.price){
-                triggerAlarm(a);
-            }
+            const s=a.sym.replace("BINANCE:","");
+            const r=await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
+            const d=await r.json();
+            if(parseFloat(d.price)>=a.price){ triggerAlarm(a); }
         }
 
         /* FOREX */
         if(a.sym.startsWith("FX:")){
-            const pair = a.sym.replace("FX:","");
-            const base = pair.substring(0,3);
-            const quote = pair.substring(3);
-            const r = await fetch(`https://api.exchangerate.host/latest?base=${base}&symbols=${quote}`);
-            const d = await r.json();
-            const price = d.rates[quote];
-            if(price >= a.price){
-                triggerAlarm(a);
-            }
+            const pair=a.sym.replace("FX:","");
+            const base=pair.substring(0,3);
+            const quote=pair.substring(3);
+            const r=await fetch(`https://api.exchangerate.host/latest?base=${base}&symbols=${quote}`);
+            const d=await r.json();
+            const price=d.rates[quote];
+            if(price>=a.price){ triggerAlarm(a); }
         }
     }
 }
 
 function triggerAlarm(a){
-    alert("ALARM! " + a.sym + " → " + a.price);
-    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-    audio.play();
+    alert("ALARM! "+a.sym+" → "+a.price);
+    new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
 }
 
-setInterval(checkAlarms, 5000);
+setInterval(checkAlarms,5000);
 
+/* INITIAL LOAD */
 render();
 </script>
 
