@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>TraderArmy Charts</title>
+<title>TraderArmy Pro Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://s3.tradingview.com/tv.js"></script>
@@ -10,19 +10,51 @@
 <style>
 body{
     margin:0;
-    background:#0e0e0e;
+    background:#0d0d0d;
     color:#fff;
     font-family:Arial, sans-serif;
 }
+
+/* HABER BANDI */
+#newsTicker{
+    background:#111;
+    border-bottom:1px solid #222;
+    overflow:hidden;
+    white-space:nowrap;
+    height:38px;
+    display:flex;
+    align-items:center;
+}
+#newsTicker span{
+    background:#b71c1c;
+    color:#fff;
+    padding:6px 12px;
+    font-weight:bold;
+    font-size:13px;
+    margin-right:10px;
+}
+#tickerContent{
+    display:inline-block;
+    animation: tickerMove 30s linear infinite;
+    font-size:13px;
+    color:#ddd;
+}
+@keyframes tickerMove {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* HEADER */
 header{
     background:#111;
     padding:10px;
     display:flex;
     gap:10px;
-    flex-wrap:wrap;
     align-items:center;
+    flex-wrap:wrap;
     border-bottom:1px solid #222;
 }
+
 button, select, input{
     background:#1a1a1a;
     color:#fff;
@@ -30,25 +62,35 @@ button, select, input{
     padding:6px 10px;
     border-radius:4px;
 }
+
+/* TAKVİM BLOĞU */
+#calendar-block{
+    background:#0f0f0f;
+    border-bottom:1px solid #222;
+}
+
+/* GRAFİKLER */
 #charts{
     display:grid;
-    height:calc(100vh - 200px);
+    height:calc(100vh - 350px);
 }
 .chart-box{
-    border:1px solid #222;
     display:flex;
     flex-direction:column;
+    border:1px solid #222;
 }
 .toolbar{
     background:#111;
     padding:6px;
     border-bottom:1px solid #222;
     display:flex;
-    gap:8px;
+    gap:6px;
 }
 .chart{
     flex:1;
 }
+
+/* ALARM */
 .alarm-box{
     background:#111;
     padding:6px;
@@ -61,22 +103,32 @@ button, select, input{
     font-size:12px;
     padding:6px;
     border-top:1px solid #222;
+    color:#ccc;
 }
+
+/* FOOTER */
 footer{
     background:#111;
     color:#aaa;
+    padding:10px;
     text-align:center;
-    padding:12px;
-    font-size:12px;
     border-top:1px solid #222;
+    font-size:12px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HABER BANDI -->
+<div id="newsTicker">
+    <span>SON DAKİKA</span>
+    <div id="tickerContent">Haberler yükleniyor...</div>
+</div>
+
+<!-- HEADER -->
 <header>
-    <strong>TraderArmy</strong>
+    <strong style="font-size:18px;">TraderArmy</strong>
 
     <button onclick="setLayout(1)">1 Grafik</button>
     <button onclick="setLayout(2)">2 Grafik</button>
@@ -108,11 +160,29 @@ footer{
     <button onclick="applyAll()">Uygula</button>
 </header>
 
+<!-- EKONOMİK TAKVİM -->
+<div id="calendar-block">
+    <div class="tradingview-widget-container" style="height:260px;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+        {
+            "colorTheme": "dark",
+            "width": "100%",
+            "height": "260",
+            "locale": "tr",
+            "importanceFilter": "0,1,2",
+            "countryFilter": "US,EU,GB,JP,CA,CH,AU,NZ"
+        }
+        </script>
+    </div>
+</div>
+
+<!-- GRAFİKLER -->
 <div id="charts"></div>
 
 <footer>
-⚠️ <b>Yasal Uyarı:</b> Bu platformda yer alan grafikler, fiyatlar ve analizler yatırım tavsiyesi değildir.
-Finansal piyasalar yüksek risk içerir. Yapılan tüm işlemlerden kullanıcı sorumludur.
+⚠️ Bu platform yatırım tavsiyesi değildir. Finansal piyasalar yüksek risk içerir. Yapılan tüm işlemler kullanıcının kendi sorumluluğundadır.
 </footer>
 
 <script>
@@ -120,6 +190,26 @@ let layout = 1;
 let alarms = JSON.parse(localStorage.getItem("ta_alarms")) || [];
 let chartSymbols = [];
 
+/* -------------------- NEWS TICKER -------------------- */
+const tickerTexts = [
+    "ABD TÜFE (CPI) – Yüksek Etki",
+    "FED Faiz Kararı – Yüksek Etki",
+    "ABD Tarım Dışı (NFP) – Yüksek Etki",
+    "ECB Faiz Kararı – Yüksek Etki",
+    "BOE Faiz Kararı – Orta/Yüksek Etki",
+    "ABD İşsizlik Oranı – Yüksek Etki",
+    "ABD PMI – Orta Etki",
+    "ABD Perakende Satışlar – Orta Etki"
+];
+let tIndex = 0;
+function rotateTicker(){
+    document.getElementById("tickerContent").innerText = tickerTexts[tIndex];
+    tIndex = (tIndex+1) % tickerTexts.length;
+}
+rotateTicker();
+setInterval(rotateTicker, 6000);
+
+/* -------------------- MULTI CHART -------------------- */
 function setLayout(n){
     layout = n;
     render();
@@ -143,7 +233,6 @@ function render(){
     }
 
     chartSymbols = [];
-
     for(let i=0;i<layout;i++){
         createChartBox(i);
     }
@@ -169,21 +258,22 @@ function createChartBox(i){
     chart.className="chart";
     chart.id = "tv"+i;
 
-    const alarmBox = document.createElement("div");
-    alarmBox.className="alarm-box";
-    alarmBox.innerHTML = `
-        <input id="alPrice${i}" placeholder="Alarm fiyatı" style="width:90px">
+    /* Alarm kutusu */
+    const alBox = document.createElement("div");
+    alBox.className="alarm-box";
+    alBox.innerHTML = `
+        <input id="alPrice${i}" placeholder="Alarm fiyatı" style="width:90px;">
         <button onclick="addAlarm(${i})">Alarm +</button>
     `;
 
-    const alarmList = document.createElement("div");
-    alarmList.className="alarm-list";
-    alarmList.id = "alarmList"+i;
+    const list = document.createElement("div");
+    list.className="alarm-list";
+    list.id="alarmList"+i;
 
     box.appendChild(toolbar);
     box.appendChild(chart);
-    box.appendChild(alarmBox);
-    box.appendChild(alarmList);
+    box.appendChild(alBox);
+    box.appendChild(list);
     area.appendChild(box);
 
     createTV(i);
@@ -213,14 +303,14 @@ function changeSymbol(i,val){
     chartSymbols[i] = val;
     render();
 }
+
 function changeTf(i,val){
     render();
 }
-function applyAll(){
-    render();
-}
 
-// -------- ALARM SİSTEMİ --------
+function applyAll(){ render(); }
+
+/* -------------------- ALARM SİSTEMİ -------------------- */
 
 function addAlarm(i){
     const sym = chartSymbols[i];
@@ -233,15 +323,16 @@ function addAlarm(i){
 }
 
 function updateAlarmList(i){
-    const list = alarms.filter(a=>a.sym===chartSymbols[i]);
+    const list = alarms.filter(a=>a.sym === chartSymbols[i]);
     document.getElementById("alarmList"+i).innerHTML =
         list.map(a=>`<div>${a.sym} → ${a.price}</div>`).join("");
 }
 
+/* Fiyat kontrol döngüsü */
 async function checkAlarms(){
     for(const a of alarms){
 
-        // KRİPTO
+        /* KRİPTO */
         if(a.sym.startsWith("BINANCE:")){
             const s = a.sym.replace("BINANCE:","");
             const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
@@ -251,11 +342,11 @@ async function checkAlarms(){
             }
         }
 
-        // FOREX
+        /* FOREX */
         if(a.sym.startsWith("FX:")){
             const pair = a.sym.replace("FX:","");
             const base = pair.substring(0,3);
-            const quote = pair.substring(3,6);
+            const quote = pair.substring(3);
             const r = await fetch(`https://api.exchangerate.host/latest?base=${base}&symbols=${quote}`);
             const d = await r.json();
             const price = d.rates[quote];
