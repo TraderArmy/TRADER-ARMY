@@ -2,8 +2,10 @@ body {
     margin: 0;
     background: #0d0f14;
     overflow: hidden;
+    font-family: Arial;
 }
 
+/* Grafik alanı */
 #chart {
     position: absolute;
     left: 60px;
@@ -12,6 +14,7 @@ body {
     height: calc(100vh - 50px);
 }
 
+/* Çizim canvas */
 #drawCanvas {
     position: absolute;
     left: 60px;
@@ -21,6 +24,7 @@ body {
     z-index: 4;
 }
 
+/* Sol toolbar */
 #toolbar {
     position: absolute;
     top: 50px;
@@ -55,6 +59,7 @@ body {
     background: #4ba3ff;
 }
 
+/* Parite paneli */
 #pairs {
     position: absolute;
     top: 5px;
@@ -62,6 +67,7 @@ body {
     z-index: 20;
     display: flex;
     gap: 8px;
+    padding: 8px;
 }
 
 #pairs button {
