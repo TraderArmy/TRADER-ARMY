@@ -59,14 +59,14 @@ footer{background:#111;color:#aaa;padding:10px;text-align:center;border-top:1px 
         <option value="FX:USDTRY">USDTRY</option>
 
         <!-- KRİPTO -->
-        <option value="BINANCE:BTCUSDT">BTCUSDT (Bitcoin)</option>
-        <option value="BINANCE:ETHUSDT">ETHUSDT (Ethereum)</option>
+        <option value="BINANCE:BTCUSDT">BTCUSDT</option>
+        <option value="BINANCE:ETHUSDT">ETHUSDT</option>
         <option value="BINANCE:XRPUSDT">XRPUSDT</option>
 
         <!-- ENDEKS -->
         <option value="OANDA:NAS100">NAS100</option>
-        <option value="OANDA:SPX500">SP500</option>
-        <option value="OANDA:US30">DOW JONES</option>
+        <option value="OANDA:SPX500">SPX500</option>
+        <option value="OANDA:US30">DOWJONES</option>
 
     </select>
 
@@ -105,7 +105,7 @@ footer{background:#111;color:#aaa;padding:10px;text-align:center;border-top:1px 
 <div id="charts"></div>
 
 <footer>
-⚠️ Bu platform yatırım tavsiyesi değildir. Piyasa işlemlerinde tüm sorumluluk kullanıcıya aittir.
+⚠️ Bu platform yatırım tavsiyesi değildir. Piyasa işlemleri risk içerir. Sorumluluk kullanıcıya aittir.
 </footer>
 
 <script>
@@ -127,7 +127,7 @@ let calendarVisible=true;
 let alarms=JSON.parse(localStorage.getItem("alarms")||"[]");
 let chartSymbols=[];
 
-/* DEFAULT SEMBOLLER (4 grafik için) */
+/* İlk açılışta kullanılacak farklı semboller */
 const defaultSymbols=[
     "FX:EURUSD",       // grafik 1
     "BINANCE:BTCUSDT", // grafik 2
@@ -137,7 +137,7 @@ const defaultSymbols=[
 
 function setLayout(n){ layout=n; render(); }
 
-/* Takvimi aç/kapat */
+/* Takvim aç kapa */
 function toggleCalendar(){
     const cal=document.getElementById("calendar-block");
     const ch=document.getElementById("charts");
@@ -152,11 +152,11 @@ function toggleCalendar(){
     calendarVisible=!calendarVisible;
 }
 
-/* --------- GRAFİK KUTULARI --------- */
+/* --------- RENDER --------- */
 function render(){
     const area=document.getElementById("charts");
     area.innerHTML="";
-    chartSymbols=[];
+    chartSymbols = chartSymbols.slice(0, layout);
 
     if(layout===1){area.style.gridTemplateColumns="1fr";}
     if(layout===2){area.style.gridTemplateColumns="1fr 1fr";}
@@ -165,9 +165,9 @@ function render(){
     for(let i=0;i<layout;i++){ createBox(i); }
 }
 
+/* --------- BOX OLUŞTUR --------- */
 function createBox(i){
     const area=document.getElementById("charts");
-
     const box=document.createElement("div");
     box.className="chart-box";
 
@@ -198,11 +198,17 @@ function createBox(i){
     refreshList(i);
 }
 
-/* --------- GRAFİK YÜKLE --------- */
+/* --------- GRAFİK YÜKLE (PARİTE SORUNU FIX) --------- */
 function loadChart(i){
-    const sym = chartSymbols[i] || defaultSymbols[i] || "FX:EURUSD";
+    let sym = chartSymbols[i];
+
+    // sadece ilk açılışta default ata
+    if(!sym){
+        sym = defaultSymbols[i] || "FX:EURUSD";
+        chartSymbols[i] = sym;
+    }
+
     const tf = tfSelect.value;
-    chartSymbols[i]=sym;
 
     new TradingView.widget({
         container_id:"tv"+i,
@@ -218,7 +224,10 @@ function loadChart(i){
     });
 }
 
-function chgSym(i,v){ chartSymbols[i]=v; render(); }
+function chgSym(i,v){
+    chartSymbols[i] = v; // artık değişiklik korunuyor
+    render();
+}
 function chgTf(i,v){ render(); }
 
 /* --------- ALARM --------- */
@@ -254,8 +263,6 @@ async function checkA(){
             const j=await(await fetch(`https://api.exchangerate.host/latest?base=${base}&symbols=${q}`)).json();
             if(j.rates[q]>=a.price) alertAlarm(a);
         }
-
-        /* ENDEKS (TRADINGVIEW API VERMİYOR → TETİK YOK) */
     }
 }
 
@@ -266,9 +273,9 @@ function alertAlarm(a){
 
 setInterval(checkA,5000);
 
-/* INITIAL */
+/* FIRST LOAD */
 render();
 </script>
 
 </body>
-</html>    
+</html>
