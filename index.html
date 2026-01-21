@@ -1,239 +1,37 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TerminalPro</title>
-
-<style>
-    body {
-        margin: 0;
-        background: #0d0f14;
-        font-family: Arial, sans-serif;
-        color: #fff;
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    /* SOL SUPER MENU */
-    .sidebar {
-        width: 260px;
-        background: linear-gradient(180deg, #0f1117 0%, #0b0c10 100%);
-        padding: 20px 15px;
-        border-right: 1px solid #1a1d24;
-        overflow-y: auto;
-    }
-    .logo {
-        font-size: 22px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 25px;
-        color: #4ba3ff;
-    }
-    .section-title {
-        font-size: 12px;
-        opacity: .6;
-        margin: 20px 0 8px 5px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .menu-item {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        margin-bottom: 5px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: 0.15s;
-    }
-    .menu-item:hover {
-        background: #1c1f26;
-        transform: translateX(3px);
-    }
-    .menu-item i {
-        margin-right: 10px;
-        opacity: .8;
-    }
-
-    /* SOL TOOLBAR */
-    .toolbar {
-        width: 50px;
-        background: #13151b;
-        border-right: 1px solid #22252d;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 12px;
-        gap: 12px;
-    }
-    .tool-btn {
-        width: 32px;
-        height: 32px;
-        background: #1c1f26;
-        border-radius: 5px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        font-size: 14px;
-        transition: 0.15s;
-    }
-    .tool-btn:hover {
-        background: #2a2d36;
-        transform: scale(1.07);
-    }
-
-    /* ANA ALAN */
-    .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .topbar {
-        height: 48px;
-        background: #12141b;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 15px;
-        border-bottom: 1px solid #1a1d24;
-    }
-
-    .split-buttons button {
-        margin-left: 6px;
-        padding: 6px 10px;
-        background: #1d1f27;
-        border: 1px solid #2a2d36;
-        color: #fff;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .split-buttons button:hover {
-        background: #2c2f3b;
-    }
-
-    /* CHART GRID */
-    .charts {
-        flex: 1;
-        display: grid;
-        gap: 5px;
-        padding: 5px;
-    }
-    .chart-box {
-        background: #10131a;
-        border: 1px solid #1b1e25;
-    }
-
-    /* FOOTER */
-    .footer {
-        height: 32px;
-        background: #0e0f12;
-        border-top: 1px solid #1a1d24;
-        font-size: 11px;
-        color: #929292;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
-
+    <meta charset="UTF-8">
+    <title>TerminalPro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 </head>
+
 <body>
 
-<!-- SOL MENÜ -->
-<div class="sidebar">
-    <div class="logo">TERMINALPRO</div>
+<div id="toolbar">
+    <div class="tool" data-tool="select">🔘</div>
 
-    <div class="section-title">KRİPTO</div>
-    <div class="menu-item"><i>🟠</i> Bitcoin (BTC)</div>
-    <div class="menu-item"><i>🟣</i> Ethereum (ETH)</div>
-    <div class="menu-item"><i>🔵</i> Solana (SOL)</div>
-    <div class="menu-item"><i>🔹</i> Ripple (XRP)</div>
+    <div class="tool" data-tool="line">／</div>
+    <div class="tool" data-tool="brush">✏️</div>
+    <div class="tool" data-tool="rect">▭</div>
+    <div class="tool" data-tool="text">T</div>
 
-    <div class="section-title">DÖVİZ & EMTİA</div>
-    <div class="menu-item"><i>💵</i> USD/TRY</div>
-    <div class="menu-item"><i>🥇</i> Altın (XAU)</div>
-    <div class="menu-item"><i>🥈</i> Gümüş (XAG)</div>
+    <div class="tool" data-tool="fibo">𝜑</div>
 
-    <div class="section-title">HİSSELER</div>
-    <div class="menu-item"><i>🚗</i> Tesla (TSLA)</div>
-    <div class="menu-item"><i>📱</i> Apple (AAPL)</div>
-    <div class="menu-item"><i>💻</i> Nvidia (NVDA)</div>
+    <div class="tool" data-tool="long">📈</div>
+    <div class="tool" data-tool="short">📉</div>
+
+    <div class="tool" id="undo">↩</div>
+    <div class="tool" id="redo">↪</div>
+    <div class="tool" id="delete">🗑</div>
 </div>
 
-<!-- SOL TOOLBAR -->
-<div class="toolbar">
-    <div class="tool-btn">／</div>
-    <div class="tool-btn">✏️</div>
-    <div class="tool-btn">＋</div>
-    <div class="tool-btn">T</div>
-    <div class="tool-btn">↔</div>
-    <div class="tool-btn">🔒</div>
-</div>
+<div id="chart"></div>
 
-<!-- ANA ALAN -->
-<div class="main">
+<canvas id="drawCanvas"></canvas>
 
-    <div class="topbar">
-        <div>BTC — ETH — SOL — USD/TRY</div>
-
-        <div class="split-buttons">
-            <button onclick="setSplit(1)">1</button>
-            <button onclick="setSplit(2)">2</button>
-            <button onclick="setSplit(3)">3</button>
-            <button onclick="setSplit(4)">4</button>
-        </div>
-    </div>
-
-    <div id="charts" class="charts"></div>
-
-    <div class="footer">
-        TerminalPro © 2026 — Bu platform yatırım tavsiyesi vermez. Finansal işlemler risk içerir.
-    </div>
-
-</div>
-
-<script src="https://s3.tradingview.com/tv.js"></script>
-
-<script>
-let symbols = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:SOLUSDT", "FX_IDC:USDTRY"];
-
-function loadCharts(count) {
-    const container = document.getElementById("charts");
-    container.innerHTML = "";
-
-    if (count === 1) container.style.gridTemplateColumns = "1fr";
-    if (count === 2) container.style.gridTemplateColumns = "1fr 1fr";
-    if (count === 3) container.style.gridTemplateColumns = "1fr 1fr";
-    if (count === 4) container.style.gridTemplateColumns = "1fr 1fr";
-
-    for (let i = 0; i < count; i++) {
-        let div = document.createElement("div");
-        div.className = "chart-box";
-        div.id = "chart" + i;
-
-        container.appendChild(div);
-
-        new TradingView.widget({
-            container_id: div.id,
-            autosize: true,
-            symbol: symbols[i],
-            interval: "D",
-            theme: "dark",
-            style: "1",
-            locale: "tr"
-        });
-    }
-}
-
-function setSplit(n) {
-    loadCharts(n);
-}
-
-loadCharts(1);
-</script>
+<script src="main.js"></script>
 
 </body>
 </html>
