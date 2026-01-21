@@ -1,5 +1,5 @@
 /* ============================================================
-    1) GRAFİK
+    1) GRAFİK — Lightweight Charts
 ============================================================ */
 const chart = LightweightCharts.createChart(document.getElementById("chart"), {
     layout:{background:{color:"#0d0f14"},textColor:"#d1d4dc"},
@@ -11,32 +11,41 @@ const candleSeries = chart.addCandlestickSeries();
     2) Yahoo Finance — Kripto + Forex + Endeks (TOKEN YOK)
 ============================================================ */
 async function loadSymbol(symbol) {
-
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1h&range=1mo`;
 
-    const res = await fetch(url);
-    const data = await res.json();
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-    const result = data.chart.result[0];
-    const timestamps = result.timestamp;
-    const quotes = result.indicators.quote[0];
+        if (!data.chart || !data.chart.result) {
+            console.log("Veri alınamadı:", data);
+            return;
+        }
 
-    const candles = timestamps.map((t, i) => ({
-        time: t,
-        open: quotes.open[i],
-        high: quotes.high[i],
-        low: quotes.low[i],
-        close: quotes.close[i]
-    }));
+        const result = data.chart.result[0];
+        const timestamps = result.timestamp;
+        const quotes = result.indicators.quote[0];
 
-    candleSeries.setData(candles);
+        const candles = timestamps.map((t, i) => ({
+            time: t,
+            open: quotes.open[i],
+            high: quotes.high[i],
+            low: quotes.low[i],
+            close: quotes.close[i]
+        }));
+
+        candleSeries.setData(candles);
+    } 
+    catch (err) {
+        console.log("HATA:", err);
+    }
 }
 
 /* Varsayılan grafik */
 loadSymbol("BTC-USD");
 
 /* ============================================================
-    3) ÇİZİM CANVAS
+    3) CANVAS — ÇİZİM MOTORU
 ============================================================ */
 const canvas = document.getElementById("drawCanvas");
 const ctx = canvas.getContext("2d");
@@ -72,7 +81,7 @@ document.querySelectorAll(".tool").forEach(btn=>{
 });
 
 /* ============================================================
-    6) KOORDİNAT
+    6) KOORDİNAT ALMA
 ============================================================ */
 function pos(evt){
     const r = canvas.getBoundingClientRect();
@@ -114,8 +123,8 @@ function drawObject(o){
     }
 
     if(o.type==="text"){
-        ctx.font=o.size+"px Arial";
-        ctx.fillStyle=o.color;
+        ctx.font = o.size + "px Arial";
+        ctx.fillStyle = o.color;
         ctx.fillText(o.text,o.x,o.y);
     }
 }
@@ -127,13 +136,14 @@ function redrawAll(){
 }
 
 /* ============================================================
-    8) TRENDLINE SEÇME
+    8) TRENDLINE SEÇİM + TAŞIMA
 ============================================================ */
 function near(x,y,a,b,dist=10){ return Math.hypot(x-a,y-b)<dist; }
 
 function hitTest(px,py){
     for(let i=paths.length-1;i>=0;i--){
         const o = paths[i];
+
         if(o.type==="line"){
             if(near(px,py,o.x1,o.y1)) return {o,hit:"p1"};
             if(near(px,py,o.x2,o.y2)) return {o,hit:"p2"};
@@ -142,7 +152,9 @@ function hitTest(px,py){
     return null;
 }
 
-let dragMode=null, offsetX=0, offsetY=0;
+let dragMode=null;
+let offsetX=0;
+let offsetY=0;
 
 canvas.addEventListener("mousedown",start);
 canvas.addEventListener("mousemove",move);
@@ -153,32 +165,33 @@ canvas.addEventListener("touchmove",move);
 canvas.addEventListener("touchend",end);
 
 /* ============================================================
-    9) ÇİZİM - START
+    9) START
 ============================================================ */
 function start(e){
     const p = pos(e);
-    drawing=true;
+    drawing = true;
 
     const hit = hitTest(p.x,p.y);
 
     if(tool==="select" && hit){
-        selectedObj=hit.o;
-        dragMode=hit.hit;
-        offsetX=p.x; offsetY=p.y;
+        selectedObj = hit.o;
+        dragMode = hit.hit;
+        offsetX = p.x;
+        offsetY = p.y;
         redrawAll();
         return;
     }
 
     if(tool==="line"){
-        current={type:"line",x1:p.x,y1:p.y,x2:p.x,y2:p.y,color:"#4ba3ff"};
+        current = {type:"line",x1:p.x,y1:p.y,x2:p.x,y2:p.y,color:"#4ba3ff"};
     }
 
     if(tool==="rect"){
-        current={type:"rect",x1:p.x,y1:p.y,x2:p.x,y2:p.y,color:"#4ba3ff"};
+        current = {type:"rect",x1:p.x,y1:p.y,x2:p.x,y2:p.y,color:"#4ba3ff"};
     }
 
     if(tool==="brush"){
-        current={type:"brush",points:[{x:p.x,y:p.y}],color:"#4ba3ff"};
+        current = {type:"brush",points:[{x:p.x, y:p.y}],color:"#4ba3ff"};
     }
 
     if(tool==="text"){
@@ -187,7 +200,7 @@ function start(e){
             paths.push({type:"text",x:p.x,y:p.y,text:t,size:20,color:"#4ba3ff"});
             redrawAll();
         }
-        drawing=false;
+        drawing = false;
     }
 }
 
@@ -198,17 +211,20 @@ function move(e){
     const p = pos(e);
 
     if(dragMode && selectedObj){
-        const dx=p.x-offsetX,dy=p.y-offsetY;
+        const dx = p.x - offsetX;
+        const dy = p.y - offsetY;
 
         if(dragMode==="p1"){
-            selectedObj.x1+=dx; selectedObj.y1+=dy;
+            selectedObj.x1 += dx;
+            selectedObj.y1 += dy;
         }
         if(dragMode==="p2"){
-            selectedObj.x2+=dx; selectedObj.y2+=dy;
+            selectedObj.x2 += dx;
+            selectedObj.y2 += dy;
         }
 
-        offsetX=p.x;
-        offsetY=p.y;
+        offsetX = p.x;
+        offsetY = p.y;
 
         redrawAll();
         return;
@@ -217,15 +233,17 @@ function move(e){
     if(!drawing || !current) return;
 
     if(current.type==="line"){
-        current.x2=p.x; current.y2=p.y;
+        current.x2 = p.x;
+        current.y2 = p.y;
     }
 
     if(current.type==="rect"){
-        current.x2=p.x; current.y2=p.y;
+        current.x2 = p.x;
+        current.y2 = p.y;
     }
 
     if(current.type==="brush"){
-        current.points.push({x:p.x,y:p.y});
+        current.points.push({x:p.x, y:p.y});
     }
 
     redrawAll();
@@ -239,11 +257,9 @@ function end(){
         dragMode=null;
         return;
     }
-
     if(current){
         paths.push(current);
     }
-
     current=null;
     drawing=false;
     redrawAll();
@@ -252,19 +268,21 @@ function end(){
 /* ============================================================
     12) UNDO / REDO / DELETE
 ============================================================ */
-undo.onclick=()=>{
+undo.onclick = () => {
     if(paths.length>0){
         undoStack.push(paths.pop());
         redrawAll();
     }
 };
-redo.onclick=()=>{
+
+redo.onclick = () => {
     if(undoStack.length>0){
         paths.push(undoStack.pop());
         redrawAll();
     }
 };
-delete.onclick=()=>{
+
+delete.onclick = () => {
     if(selectedObj){
         paths = paths.filter(p=>p!==selectedObj);
         selectedObj=null;
